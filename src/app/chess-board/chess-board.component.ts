@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { GameService } from '../services/game.service';
 
 @Component({
   selector: 'app-chess-board',
@@ -6,6 +7,14 @@ import { Component } from '@angular/core';
   templateUrl: './chess-board.component.html',
   styleUrl: './chess-board.component.css'
 })
-export class ChessBoardComponent {
+export class ChessBoardComponent implements OnInit{
+  constructor(private gameService: GameService) {}
 
+  ngOnInit(): void {
+    this.gameService;
+  }
+
+  get board() {
+    return this.gameService.board();
+  }
 }
