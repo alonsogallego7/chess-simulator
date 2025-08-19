@@ -1,0 +1,59 @@
+#container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-block: 2vh;
+}
+
+#complete-board {
+  display: flex;
+  flex-direction: row;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+}
+
+:host ::ng-deep .square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  height: 70px;
+  border: 1px solid black;
+  outline: 1px solid black;
+}
+
+:host ::ng-deep .square-beige {
+  background-color: beige;
+}
+
+:host ::ng-deep .square-brown {
+  background-color: rgb(163, 91, 55);
+}
+
+:host ::ng-deep .selected-piece {
+  background-color: rgb(173, 147, 112);
+}
+
+:host ::ng-deep .check {
+  background-color: rgb(120, 22, 13)
+}
+
+:host ::ng-deep .lastMoveOrigin {
+  background-color: rgb(226, 203, 160);
+}
+
+:host ::ng-deep .lastMoveDestination {
+  background-color: rgb(231, 171, 61);
+}
+
+:host ::ng-deep .square-lighted {
+  background-color: red;
+}
+
+:host ::ng-deep .square-intersection {
+  background-color: rgb(248, 195, 35);
+}
