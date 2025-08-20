@@ -1,20 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { GameService } from '../services/game.service';
+import { BoardService } from '../services/board.service';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-chess-board',
-  imports: [],
+  imports: [NgClass],
   templateUrl: './chess-board.component.html',
   styleUrl: './chess-board.component.css'
 })
 export class ChessBoardComponent implements OnInit{
-  constructor(private gameService: GameService) {}
+  constructor(private boardService: BoardService) {}
 
   ngOnInit(): void {
-    this.gameService;
+
   }
 
   get board() {
-    return this.gameService.board();
+    return this.boardService.board();
   }
 }

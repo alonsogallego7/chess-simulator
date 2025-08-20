@@ -1,5 +1,13 @@
 <div id="complete-board">
   <div id="board">
-    
+    @for (row of board; track row) {
+      @for (square of row; track square) {
+        <div [ngClass]="[square.squareClass, square.squareColorClass]">
+          @if (square.piece) {
+            <img [src]="'assets/pieces/' + square.piece.colour + '_' + square.piece.type + '.svg.png'"/>
+          }
+        </div>
+      }
+    }
   </div>
 </div>
