@@ -24,7 +24,7 @@ export class BoardService {
         auxIndex += 1;
 
         let color = auxIndex % 2 === 0 ? "square-beige" : "square-brown";
-        let coordinate = `${columns[col]}${8 - row}`;
+        let coordinate: [number, number] = [row, col];
 
         let piece: Piece | null = null;
 
@@ -43,5 +43,51 @@ export class BoardService {
     }
 
     this.board.set(newBoard);
+  }
+
+  getPossibleMovesByPiece(piece: Piece): [number, number][] | null {
+    let square = this.getSquareByPiece(piece);
+    if (!square) return null;
+
+    let [startRow, startCol] = square.coordinates;
+    let abstractMoves = piece.getAbstractMoves();
+
+    let possibleMoves: [number, number][] = [];
+
+    for (let move of abstractMoves) {
+      let row = startRow;
+      let col = startCol;
+
+      do {
+        row += move.rowOffset;
+        col += move.colOffset;
+
+        if (row < 0 || row > 7 || col < 0 || col > 7) break;
+
+        let targetSquare = this.board()[row][col];
+
+        if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
+
+        possibleMoves.push([row, col]);
+
+        if (targetSquare.piece && targetSquare.piece.colour != piece.colour) break;
+
+      } while (move.repeatable);
+    }
+
+    return possibleMoves;
+  }
+
+  getSquareByPiece(piece: Piece): Square | null {
+    for (let row = 0; row < this.board().length; row++) {
+      for (let col = 0; col < this.board()[row].length; col++) {
+        const square = this.board()[row][col];
+        if (square.piece === piece) {
+          return square;
+        }
+      }
+    }
+
+    return null;
   }
 }

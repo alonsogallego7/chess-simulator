@@ -5,5 +5,5 @@ export function algebraicToIndex(pos: string): [number, number] {
 }
 
 export function indexToAlgebraic([row, col]: [number, number]): string {
-  return String.fromCharCode('a'.charCodeAt(0) + col) + (row + 1);
+  return String.fromCharCode('a'.charCodeAt(0) + col) + (8 - row);
 }

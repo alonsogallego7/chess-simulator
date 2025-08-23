@@ -6,10 +6,10 @@ export class Square {
   squareColorClass: string;
 
   // Game
-  coordinates: string;
+  coordinates: [number, number];
   piece: Piece | null;
 
-  constructor(squareColorClass: string, coordinates: string, piece: Piece | null) {
+  constructor(squareColorClass: string, coordinates: [number, number], piece: Piece | null) {
     this.squareClass = 'square';
     this.squareColorClass = squareColorClass;
 
