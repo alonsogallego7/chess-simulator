@@ -9,13 +9,21 @@ import { Piece } from '../models/Piece';
 export class PlayerService {
   boardService = inject(BoardService);
 
-  players: Player[];
+  private players: Player[];
 
   setPlayers(name1: string, name2: string) {
     this.players = [
       new Player(name1, "white"),
       new Player(name2, "black")
     ];
+  }
+
+  getPlayers(): Player[] {
+    return this.players;
+  }
+
+  getPlayerByColour(colour: 'white' | 'black'): Player {
+    return this.players.find(p => p.colour === colour)!;
   }
 
   getPlayerPieces(player: Player): Piece[] {

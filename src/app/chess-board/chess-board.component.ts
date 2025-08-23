@@ -13,8 +13,6 @@ export class ChessBoardComponent implements OnInit{
   boardService = inject(BoardService);
   playerService = inject(PlayerService)
 
-  constructor() {}
-
   ngOnInit(): void {
     this.boardService.setBoard();
     this.playerService.setPlayers("Alonso", "Luis");
