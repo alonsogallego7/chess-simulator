@@ -1,8 +1,9 @@
-import { Player } from "./Player";
+export class Piece {
+  name: string;
+  colour: "white" | "black";
 
-export abstract class Piece {
-  colour: string;
-  position: string;
-
-  
+  constructor(name: string, colour: "white" | "black") {
+    this.name = name;
+    this.colour = colour;
+  }
 }

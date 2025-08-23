@@ -1,7 +1,7 @@
 import { Piece } from "../Piece";
-import { Player } from "../Player";
-
 
 export class Bishop extends Piece {
-  
+  constructor(colour: "white" | "black") {
+    super("bishop", colour);
+  }
 }

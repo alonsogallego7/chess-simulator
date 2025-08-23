@@ -15,7 +15,8 @@ export class PieceFactory {
       case "bishop": return new Bishop(colour);
       case "queen": return new Queen(colour);
       case "king": return new King(colour);
-      default: throw new Error("Unknown piece type: " + type);
+      default:
+        throw new Error(`Non-valid piece`);
     }
   }
 }

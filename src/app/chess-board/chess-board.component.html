@@ -4,7 +4,7 @@
       @for (square of row; track square) {
         <div [ngClass]="[square.squareClass, square.squareColorClass]">
           @if (square.piece) {
-            <img [src]="'assets/pieces/' + square.piece.colour + '_' + square.piece.type + '.svg.png'"/>
+            <img [src]="'assets/pieces/' + square.piece.colour + '_' + square.piece.name + '.svg.png'"/>
           }
         </div>
       }

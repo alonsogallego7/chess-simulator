@@ -4,10 +4,10 @@ import { ChessBoardComponent } from "./chess-board/chess-board.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ChessBoardComponent],
+  imports: [ChessBoardComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'chess-remake';
+  title = 'chess-project';
 }

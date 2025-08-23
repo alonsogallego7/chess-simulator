@@ -1,16 +1,13 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { Piece } from '../models/Piece';
 import { Square } from '../models/Square';
+import { PieceFactory } from '../models/PieceFactory';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BoardService {
   board: WritableSignal<Square[][]> = signal([]);
-
-  constructor() {
-    this.setBoard();
-  }
 
   setBoard() {
     let newBoard: Square[][] = [];
@@ -31,11 +28,11 @@ export class BoardService {
 
         let piece: Piece | null = null;
 
-        if (row === 0) piece = new Piece("black", initialPieces[col]);
-        if (row === 1) piece = new Piece("black", "pawn");
+        if (row === 0) piece = PieceFactory.createPiece("black", initialPieces[col]);
+        if (row === 1) piece = PieceFactory.createPiece("black", "pawn");
 
-        if (row === 6) piece = new Piece("white", "pawn");
-        if (row === 7) piece = new Piece("white", initialPieces[col]);
+        if (row === 6) piece = PieceFactory.createPiece("white", "pawn");
+        if (row === 7) piece = PieceFactory.createPiece("white", initialPieces[col]);
 
         rowArray.push(new Square(color, coordinate, piece));
       }

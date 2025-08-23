@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "chess-remake": {
+    "chess-project": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/chess-remake",
+            "outputPath": "dist/chess-project",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -64,10 +64,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "chess-remake:build:production"
+              "buildTarget": "chess-project:build:production"
             },
             "development": {
-              "buildTarget": "chess-remake:build:development"
+              "buildTarget": "chess-project:build:development"
             }
           },
           "defaultConfiguration": "development"

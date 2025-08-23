@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { BoardService } from '../services/board.service';
 import { NgClass } from '@angular/common';
+import { PlayerService } from '../services/player.service';
 
 @Component({
   selector: 'app-chess-board',
@@ -9,10 +10,14 @@ import { NgClass } from '@angular/common';
   styleUrl: './chess-board.component.css'
 })
 export class ChessBoardComponent implements OnInit{
-  constructor(private boardService: BoardService) {}
+  boardService = inject(BoardService);
+  playerService = inject(PlayerService)
+
+  constructor() {}
 
   ngOnInit(): void {
-
+    this.boardService.setBoard();
+    this.playerService.setPlayers("Alonso", "Luis");
   }
 
   get board() {
