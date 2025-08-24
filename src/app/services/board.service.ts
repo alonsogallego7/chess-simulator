@@ -45,14 +45,18 @@ export class BoardService {
     this.board.set(newBoard);
   }
 
-  getPossibleMovesByPiece(piece: Piece): [number, number][] | null {
+  getValidMovesByPiece(piece: Piece | null): [number, number][] | null {
+    this.resetSquaresHighlight();
+
+    if (!piece) return null;
+
     let square = this.getSquareByPiece(piece);
     if (!square) return null;
 
     let [startRow, startCol] = square.coordinates;
     let abstractMoves = piece.getAbstractMoves();
 
-    let possibleMoves: [number, number][] = [];
+    let validMoves: [number, number][] = [];
 
     for (let move of abstractMoves) {
       let row = startRow;
@@ -66,22 +70,25 @@ export class BoardService {
 
         let targetSquare = this.board()[row][col];
 
+        // Same colour piece
         if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
 
-        possibleMoves.push([row, col]);
+        validMoves.push([row, col]);
+        targetSquare.highlight = "move";
 
+        // Different colour piece (intersect)
         if (targetSquare.piece && targetSquare.piece.colour != piece.colour) break;
 
       } while (move.repeatable);
     }
 
-    return possibleMoves;
+    return validMoves;
   }
 
   getSquareByPiece(piece: Piece): Square | null {
     for (let row = 0; row < this.board().length; row++) {
       for (let col = 0; col < this.board()[row].length; col++) {
-        const square = this.board()[row][col];
+        let square = this.board()[row][col];
         if (square.piece === piece) {
           return square;
         }
@@ -89,5 +96,15 @@ export class BoardService {
     }
 
     return null;
+  }
+
+  resetSquaresHighlight() {
+    for (let row = 0; row < this.board().length; row++) {
+      for (let col = 0; col < this.board()[row].length; col++) {
+        let square = this.board()[row][col];
+
+        square.highlight = "none";
+      }
+    }
   }
 }
