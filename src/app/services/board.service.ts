@@ -2,6 +2,7 @@ import { Injectable, signal, WritableSignal } from '@angular/core';
 import { Piece } from '../models/Piece';
 import { Square } from '../models/Square';
 import { PieceFactory } from '../models/PieceFactory';
+import { Move } from '../models/Move';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,6 @@ export class BoardService {
     let newBoard: Square[][] = [];
 
     let initialPieces: string[] = ["rook","knight","bishop","queen","king","bishop","knight","rook"];
-
-    let columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
     let auxIndex = 1;
     for (let row = 0; row < 8; row++) {
@@ -45,13 +44,13 @@ export class BoardService {
     this.board.set(newBoard);
   }
 
-  getValidMovesByPiece(piece: Piece | null): [number, number][] | null {
+  getValidMovesByPiece(piece: Piece | null): [number, number][] | [] {
     this.resetSquaresHighlight();
 
-    if (!piece) return null;
+    if (!piece) return [];
 
     let square = this.getSquareByPiece(piece);
-    if (!square) return null;
+    if (!square) return [];
 
     let [startRow, startCol] = square.coordinates;
     let abstractMoves = piece.getAbstractMoves();
@@ -70,19 +69,54 @@ export class BoardService {
 
         let targetSquare = this.board()[row][col];
 
-        // Same colour piece
-        if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
+        if (piece.name === "pawn") {
+          if (move.colOffset === 0) {
+            // Forward move
+            if (targetSquare.piece) break;
 
-        validMoves.push([row, col]);
-        targetSquare.highlight = "move";
+            validMoves.push([row, col]);
+            targetSquare.highlight = "move";
+          } else {
+            // Diagonal move
+            if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
+              validMoves.push([row, col]);
+              targetSquare.highlight = "intersect";
+            }
 
-        // Different colour piece (intersect)
-        if (targetSquare.piece && targetSquare.piece.colour != piece.colour) break;
+            break;
+          }
+        } else {
+          // Same colour piece
+          if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
+
+          // Different colour piece
+          if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
+            validMoves.push([row, col]);
+            targetSquare.highlight = "intersect";
+            break;
+          }
+
+          // Empty square
+          validMoves.push([row, col]);
+          targetSquare.highlight = "move";
+        }
 
       } while (move.repeatable);
     }
 
     return validMoves;
+  }
+
+  movePiece(move: Move) {
+    let [rowFrom, colFrom] = move.from;
+    let [rowTo, colTo] = move.to;
+
+    let piece = this.board()[rowFrom][colFrom].piece;
+
+    this.board()[rowFrom][colFrom].piece = null;
+    this.board()[rowTo][colTo].piece = piece;
+
+    this.resetSquaresHighlight();
   }
 
   getSquareByPiece(piece: Piece): Square | null {
