@@ -15,14 +15,23 @@ export class GameService {
 
   currentTurnPlayer: Player;
 
-  selectedSquare: Square | null;;
-  selectedPieceValidMoves: [number, number][] | [];
+  selectedSquare: Square | null = null
+  selectedPieceValidMoves: [number, number][] = [];
+
+  movesHistory: Move[] = []
 
   startGame() {
+    this.selectedSquare = null;
+    this.selectedPieceValidMoves = [];
+    this.movesHistory = [];
+
     this.currentTurnPlayer = this.playerService.getPlayerByColour("white");
   }
 
   nextTurn() {
+    this.selectedSquare = null;
+    this.selectedPieceValidMoves = [];
+
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
 
@@ -34,6 +43,8 @@ export class GameService {
   }
 
   handleSquareClick(square: Square) {
+    this.boardService.resetSquaresHighlight();
+    
     // Same colour piece
     if (square.piece?.colour === this.currentTurnPlayer.colour) {
       this.selectedSquare = square;
@@ -60,6 +71,8 @@ export class GameService {
       ) {
         let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
         this.boardService.movePiece(move);
+
+        this.movesHistory.push(move);
 
         this.nextTurn();
       }

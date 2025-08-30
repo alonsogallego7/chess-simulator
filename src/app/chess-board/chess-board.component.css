@@ -38,7 +38,7 @@
   background-color: rgb(163, 91, 55);
 }
 
-:host ::ng-deep .selected-piece {
+:host ::ng-deep .selected {
   background-color: rgb(173, 147, 112);
 }
 

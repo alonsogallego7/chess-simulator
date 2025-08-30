@@ -45,12 +45,12 @@ export class BoardService {
   }
 
   getValidMovesByPiece(piece: Piece | null): [number, number][] | [] {
-    this.resetSquaresHighlight();
-
     if (!piece) return [];
 
     let square = this.getSquareByPiece(piece);
     if (!square) return [];
+
+    square.highlight = "selected";
 
     let [startRow, startCol] = square.coordinates;
     let abstractMoves = piece.getAbstractMoves();
@@ -112,11 +112,25 @@ export class BoardService {
     let [rowTo, colTo] = move.to;
 
     let piece = this.board()[rowFrom][colFrom].piece;
+    let squareFrom = this.board()[rowFrom][colFrom];
+    let squareTo = this.board()[rowTo][colTo];
 
-    this.board()[rowFrom][colFrom].piece = null;
-    this.board()[rowTo][colTo].piece = piece;
+    squareFrom.piece = null;
+    squareTo.piece = piece;
 
     this.resetSquaresHighlight();
+
+    for (let row = 0; row < this.board().length; row++) {
+      for (let col = 0; col < this.board()[row].length; col++) {
+        let square = this.board()[row][col];
+        if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
+          square.highlight = "none";
+        }
+      }
+    }
+
+    squareFrom.highlight = "last-move-from";
+    squareTo.highlight = "last-move-to";
   }
 
   getSquareByPiece(piece: Piece): Square | null {
@@ -136,8 +150,9 @@ export class BoardService {
     for (let row = 0; row < this.board().length; row++) {
       for (let col = 0; col < this.board()[row].length; col++) {
         let square = this.board()[row][col];
-
-        square.highlight = "none";
+        if (square.highlight != "last-move-from" && square.highlight != "last-move-to") {
+          square.highlight = "none";
+        }
       }
     }
   }
