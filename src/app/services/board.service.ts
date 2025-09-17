@@ -44,13 +44,11 @@ export class BoardService {
     this.board.set(newBoard);
   }
 
-  getValidMovesByPiece(piece: Piece | null): [number, number][] | [] {
+  getValidMovesByPiece(piece: Piece | null): [number, number][] {
     if (!piece) return [];
 
     let square = this.getSquareByPiece(piece);
     if (!square) return [];
-
-    square.highlight = "selected";
 
     let [startRow, startCol] = square.coordinates;
     let abstractMoves = piece.getAbstractMoves();
@@ -71,34 +69,21 @@ export class BoardService {
 
         if (piece.name === "pawn") {
           if (move.colOffset === 0) {
-            // Forward move
             if (targetSquare.piece) break;
-
             validMoves.push([row, col]);
-            targetSquare.highlight = "move";
           } else {
-            // Diagonal move
             if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
               validMoves.push([row, col]);
-              targetSquare.highlight = "intersect";
             }
-
             break;
           }
         } else {
-          // Same colour piece
           if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
-
-          // Different colour piece
           if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
             validMoves.push([row, col]);
-            targetSquare.highlight = "intersect";
             break;
           }
-
-          // Empty square
           validMoves.push([row, col]);
-          targetSquare.highlight = "move";
         }
 
       } while (move.repeatable);
@@ -131,6 +116,8 @@ export class BoardService {
 
     squareFrom.highlight = "last-move-from";
     squareTo.highlight = "last-move-to";
+
+    this.checkForCheck(piece!.colour === "white" ? "black" : "white");
   }
 
   getSquareByPiece(piece: Piece): Square | null {
@@ -146,14 +133,63 @@ export class BoardService {
     return null;
   }
 
+  getKingSquare(colour: "white" | "black"): Square | null {
+    for (const row of this.board()) {
+      for (const square of row) {
+        if (square.piece?.name === "king" && square.piece.colour === colour) {
+          return square;
+        }
+      }
+    }
+    return null;
+  }
+
+  checkForCheck(colour: "white" | "black") {
+    let kingSquare = this.getKingSquare(colour);
+    if (!kingSquare) return;
+
+    for (let row = 0; row < this.board().length; row++) {
+      for (let col = 0; col < this.board()[row].length; col++) {
+        let piece = this.board()[row][col].piece;
+        if (piece && piece.colour !== colour) {
+          let moves = this.getValidMovesByPiece(piece);
+          if (moves.some(([r, c]) =>
+            r === kingSquare.coordinates[0] && c === kingSquare.coordinates[1]
+          )) {
+            kingSquare.highlight = "check";
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  highlightMoves(piece: Piece) {
+    let moves = this.getValidMovesByPiece(piece);
+    let square = this.getSquareByPiece(piece);
+    if (!square) return;
+
+    square.highlight = "selected";
+
+    for (let [r, c] of moves) {
+      let targetSquare = this.board()[r][c];
+      targetSquare.highlight = targetSquare.piece ? "intersect" : "move";
+    }
+  }
+
   resetSquaresHighlight() {
     for (let row = 0; row < this.board().length; row++) {
       for (let col = 0; col < this.board()[row].length; col++) {
         let square = this.board()[row][col];
-        if (square.highlight != "last-move-from" && square.highlight != "last-move-to") {
+        if (
+          square.highlight != "last-move-from" &&
+          square.highlight != "last-move-to" &&
+          square.highlight != "check"
+        ) {
           square.highlight = "none";
         }
       }
     }
   }
 }
+

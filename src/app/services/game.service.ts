@@ -32,22 +32,17 @@ export class GameService {
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
 
-    this.selectedSquare = null;
-    this.selectedPieceValidMoves = [];
-
     let [player1, player2] = this.playerService.getPlayers();
     this.currentTurnPlayer = this.currentTurnPlayer === player1 ? player2 : player1;
-
-    this.selectedSquare = null;
-    this.selectedPieceValidMoves = [];
   }
 
   handleSquareClick(square: Square) {
     this.boardService.resetSquaresHighlight();
-    
+
     // Same colour piece
     if (square.piece?.colour === this.currentTurnPlayer.colour) {
       this.selectedSquare = square;
+      this.boardService.highlightMoves(square.piece)
       this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
       return;
     }
