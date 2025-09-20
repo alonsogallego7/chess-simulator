@@ -55,6 +55,8 @@ export class BoardService {
 
     let validMoves: [number, number][] = [];
 
+    let pawnMoves = 0; // To limit the number of moves of the pawn to 1 when it's not its first move
+
     for (let move of abstractMoves) {
       let row = startRow;
       let col = startCol;
@@ -63,26 +65,47 @@ export class BoardService {
         row += move.rowOffset;
         col += move.colOffset;
 
+
         if (row < 0 || row > 7 || col < 0 || col > 7) break;
 
         let targetSquare = this.board()[row][col];
 
         if (piece.name === "pawn") {
+
+
           if (move.colOffset === 0) {
-            if (targetSquare.piece) break;
-            validMoves.push([row, col]);
+            if ((piece.colour == "white" && row > 3) || (piece.colour == "black" && row < 5)) {
+              if (targetSquare.piece) {
+                break;
+              }
+
+              validMoves.push([row, col]);
+            } else if (pawnMoves < 1) {
+              if (targetSquare.piece) {
+                break;
+              }
+
+              validMoves.push([row, col]);
+
+              pawnMoves++;
+            }
           } else {
             if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
               validMoves.push([row, col]);
             }
+
             break;
           }
         } else {
-          if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
+          if (targetSquare.piece && targetSquare.piece.colour == piece.colour) {
+            break;
+          }
+
           if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
             validMoves.push([row, col]);
             break;
           }
+
           validMoves.push([row, col]);
         }
 
