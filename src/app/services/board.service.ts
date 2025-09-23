@@ -71,8 +71,6 @@ export class BoardService {
         let targetSquare = this.board()[row][col];
 
         if (piece.name === "pawn") {
-
-
           if (move.colOffset === 0) {
             if ((piece.colour == "white" && row > 3) || (piece.colour == "black" && row < 5)) {
               if (targetSquare.piece) {
@@ -139,8 +137,6 @@ export class BoardService {
 
     squareFrom.highlight = "last-move-from";
     squareTo.highlight = "last-move-to";
-
-    this.checkForCheck(piece!.colour === "white" ? "black" : "white");
   }
 
   getSquareByPiece(piece: Piece): Square | null {
@@ -167,24 +163,8 @@ export class BoardService {
     return null;
   }
 
-  checkForCheck(colour: "white" | "black") {
-    let kingSquare = this.getKingSquare(colour);
-    if (!kingSquare) return;
-
-    for (let row = 0; row < this.board().length; row++) {
-      for (let col = 0; col < this.board()[row].length; col++) {
-        let piece = this.board()[row][col].piece;
-        if (piece && piece.colour !== colour) {
-          let moves = this.getValidMovesByPiece(piece);
-          if (moves.some(([r, c]) =>
-            r === kingSquare.coordinates[0] && c === kingSquare.coordinates[1]
-          )) {
-            kingSquare.highlight = "check";
-            return;
-          }
-        }
-      }
-    }
+  highlightCheck(kingSquare: Square) {
+    kingSquare.highlight = "check";
   }
 
   highlightMoves(piece: Piece) {

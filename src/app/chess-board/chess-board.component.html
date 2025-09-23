@@ -8,7 +8,7 @@
           square.highlight != 'none' ? square.highlight : ''
         ]"
         >
-          @if (square.piece) {
+          @if (square.piece && square.piece.selectable) {
             <img [src]="'assets/pieces/' + square.piece.colour + '_' + square.piece.name + '.svg.png'"/>
           }
         </div>

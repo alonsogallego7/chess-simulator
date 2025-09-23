@@ -18,7 +18,7 @@ export class GameService {
   selectedSquare: Square | null = null
   selectedPieceValidMoves: [number, number][] = [];
 
-  movesHistory: Move[] = []
+  movesHistory: Move[] = [];
 
   startGame() {
     this.selectedSquare = null;
@@ -49,11 +49,18 @@ export class GameService {
 
     // Move
     if (this.selectedSquare) {
+      // square is the destination square
       if (square.piece) {
         this.handlePieceCapture(square);
       } else {
         this.handlePieceMove(square);
       }
+
+      this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
+
+      this.handleCheck();
+
+      this.nextTurn();
     }
   }
 
@@ -68,8 +75,6 @@ export class GameService {
         this.boardService.movePiece(move);
 
         this.movesHistory.push(move);
-
-        this.nextTurn();
       }
     }
   }
@@ -86,8 +91,19 @@ export class GameService {
 
       let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
       this.boardService.movePiece(move);
+    }
+  }
 
-      this.nextTurn();
+  handleCheck() {
+    let kingSquare = this.boardService.getKingSquare(this.currentTurnPlayer.colour == "white" ? "black" : "white");
+
+    if (this.selectedPieceValidMoves.some(
+      ([r, c]) =>
+        r === kingSquare!.coordinates[0] &&
+        c === kingSquare!.coordinates[1]
+      )
+    ) {
+      this.boardService.highlightCheck(kingSquare!);
     }
   }
 }
