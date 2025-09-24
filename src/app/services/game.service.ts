@@ -20,6 +20,9 @@ export class GameService {
 
   movesHistory: Move[] = [];
 
+  isCheck: boolean = false;
+  checkAttackLine: [number, number][] = [];
+
   startGame() {
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
@@ -42,8 +45,13 @@ export class GameService {
     // Same colour piece
     if (square.piece?.colour === this.currentTurnPlayer.colour) {
       this.selectedSquare = square;
-      this.boardService.highlightMoves(square.piece)
-      this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
+      this.boardService.highlightMoves(square.piece);
+      if (this.isCheck == true) {
+        this.selectedPieceValidMoves = this.boardService.getValidMovesToDefendCheckByPiece(this.checkAttackLine, square.piece);
+      } else {
+        this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
+      }
+
       return;
     }
 
@@ -56,6 +64,7 @@ export class GameService {
         this.handlePieceMove(square);
       }
 
+      this.selectedSquare = square;
       this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
 
       this.handleCheck();
@@ -104,6 +113,11 @@ export class GameService {
       )
     ) {
       this.boardService.highlightCheck(kingSquare!);
+
+      this.isCheck = true;
+      this.checkAttackLine = this.boardService.getSquaresBetweenPieces(this.selectedSquare, kingSquare);
+    } else {
+      this.isCheck = false;
     }
   }
 }

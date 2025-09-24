@@ -113,6 +113,62 @@ export class BoardService {
     return validMoves;
   }
 
+  getValidMovesToDefendCheckByPiece(checkAttackLine: [number, number][], piece: Piece | null) {
+    if (!piece) return [];
+
+    let square = this.getSquareByPiece(piece);
+    if (!square) return [];
+
+    let pieceValidMoves = this.getValidMovesByPiece(piece);
+    let validMovesToDefendCheck: [number, number][] = [];
+
+    for (let position of checkAttackLine) {
+      for (let move of pieceValidMoves) {
+        if (position[0] == move[0] && position[1] == move[1]) {
+          validMovesToDefendCheck.push([move[0], move[1]]);
+        }
+      }
+    }
+
+    return validMovesToDefendCheck;
+  }
+
+  getSquaresBetweenPieces(startSquare: Square | null, endSquare: Square | null): [number, number][] {
+    console.log(startSquare);
+    console.log(endSquare);
+
+    if (!startSquare?.piece || !endSquare?.piece) return [];
+
+    let [r1, c1] = startSquare.coordinates;
+    let [r2, c2] = endSquare.coordinates;
+
+    let dr = Math.sign(r2 - r1);
+    let dc = Math.sign(c2 - c1);
+
+    // Solo funciona si están en línea recta o diagonal
+    if (!(dr === 0 || dc === 0 || Math.abs(r2 - r1) === Math.abs(c2 - c1))) {
+      return [];
+    }
+
+    let squares: [number, number][] = [];
+    let r = r1 + dr;
+    let c = c1 + dc;
+
+    while (r !== r2 || c !== c2) {
+      squares.push([r, c]);
+      r += dr;
+      c += dc;
+    }
+
+    // Quitamos la última porque es la del endSquare
+    squares.pop();
+
+    console.log(squares);
+
+
+    return squares;
+  }
+
   movePiece(move: Move) {
     let [rowFrom, colFrom] = move.from;
     let [rowTo, colTo] = move.to;
