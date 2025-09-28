@@ -3,12 +3,14 @@ import { Piece } from '../models/Piece';
 import { Square } from '../models/Square';
 import { PieceFactory } from '../models/PieceFactory';
 import { Move } from '../models/Move';
+import { GameService } from './game.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BoardService {
   board: WritableSignal<Square[][]> = signal([]);
+  gameService: GameService;
 
   setBoard() {
     let newBoard: Square[][] = [];
@@ -126,17 +128,17 @@ export class BoardService {
       for (let move of pieceValidMoves) {
         if (position[0] == move[0] && position[1] == move[1]) {
           validMovesToDefendCheck.push([move[0], move[1]]);
+        } else {
+
         }
       }
     }
+
 
     return validMovesToDefendCheck;
   }
 
   getSquaresBetweenPieces(startSquare: Square | null, endSquare: Square | null): [number, number][] {
-    console.log(startSquare);
-    console.log(endSquare);
-
     if (!startSquare?.piece || !endSquare?.piece) return [];
 
     let [r1, c1] = startSquare.coordinates;
@@ -159,12 +161,6 @@ export class BoardService {
       r += dr;
       c += dc;
     }
-
-    // Quitamos la última porque es la del endSquare
-    squares.pop();
-
-    console.log(squares);
-
 
     return squares;
   }
@@ -223,12 +219,10 @@ export class BoardService {
     kingSquare.highlight = "check";
   }
 
-  highlightMoves(piece: Piece) {
-    let moves = this.getValidMovesByPiece(piece);
-    let square = this.getSquareByPiece(piece);
-    if (!square) return;
+  highlightMoves(selectedSquare: Square, moves: [number, number][]) {
+    if (!selectedSquare) return;
 
-    square.highlight = "selected";
+    selectedSquare.highlight = "selected";
 
     for (let [r, c] of moves) {
       let targetSquare = this.board()[r][c];

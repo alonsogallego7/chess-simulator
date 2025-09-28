@@ -45,18 +45,25 @@ export class GameService {
     // Same colour piece
     if (square.piece?.colour === this.currentTurnPlayer.colour) {
       this.selectedSquare = square;
-      this.boardService.highlightMoves(square.piece);
       if (this.isCheck == true) {
         this.selectedPieceValidMoves = this.boardService.getValidMovesToDefendCheckByPiece(this.checkAttackLine, square.piece);
       } else {
         this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
       }
 
+      this.boardService.highlightMoves(this.selectedSquare, this.selectedPieceValidMoves);
+
       return;
     }
 
     // Move
-    if (this.selectedSquare) {
+    if (
+      this.selectedSquare &&
+      this.selectedPieceValidMoves.some(([r, c]) =>
+        r === square.coordinates[0] &&
+        c === square.coordinates[1]
+      )
+    ) {
       // square is the destination square
       if (square.piece) {
         this.handlePieceCapture(square);
