@@ -123,14 +123,19 @@ export class BoardService {
 
     let pieceValidMoves = this.getValidMovesByPiece(piece);
     let validMovesToDefendCheck: [number, number][] = [];
-
-    for (let position of checkAttackLine) {
-      for (let move of pieceValidMoves) {
-        if (position[0] == move[0] && position[1] == move[1]) {
-          validMovesToDefendCheck.push([move[0], move[1]]);
-        } else {
-
-        }
+    for (let move of pieceValidMoves) {
+      if (piece.name === "king") {
+          if (!checkAttackLine.some(
+            ([r, c]) => r === move[0] && c === move[1])
+          ) {
+              validMovesToDefendCheck.push([move[0], move[1]]);
+          }
+      } else {
+          if (checkAttackLine.some(
+            ([r, c]) => r === move[0] && c === move[1])
+          ) {
+              validMovesToDefendCheck.push([move[0], move[1]]);
+          }
       }
     }
 
@@ -189,6 +194,14 @@ export class BoardService {
 
     squareFrom.highlight = "last-move-from";
     squareTo.highlight = "last-move-to";
+  }
+
+  castle(destinationSquare: [number, number]) {
+    switch (destinationSquare) {
+      case [7,6]:
+        
+        break;
+    }
   }
 
   getSquareByPiece(piece: Piece): Square | null {

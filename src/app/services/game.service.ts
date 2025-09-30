@@ -23,6 +23,13 @@ export class GameService {
   isCheck: boolean = false;
   checkAttackLine: [number, number][] = [];
 
+  castlingKeyPositionsMap = new Map<[number, number], string>([
+    [[7,6], "white"],
+    [[7,2], "white"],
+    [[0,6], "black"],
+    [[0,2], "black"],
+  ])
+
   startGame() {
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
@@ -64,11 +71,15 @@ export class GameService {
         c === square.coordinates[1]
       )
     ) {
-      // square is the destination square
+      // square is the destination square in this case
       if (square.piece) {
         this.handlePieceCapture(square);
       } else {
-        this.handlePieceMove(square);
+        if (this.selectedSquare!.piece!.name == "king") {
+          this.handleCastling(square);
+        } else {
+          this.handlePieceMove(square);
+        }
       }
 
       this.selectedSquare = square;
@@ -125,6 +136,19 @@ export class GameService {
       this.checkAttackLine = this.boardService.getSquaresBetweenPieces(this.selectedSquare, kingSquare);
     } else {
       this.isCheck = false;
+    }
+  }
+
+  handleCastling(destinationSquare: Square) {
+    let [r, c] = destinationSquare.coordinates;
+
+    let matchedEntry = Array.from(this.castlingKeyPositionsMap.entries()).find(
+        ([[kr, kc], value]) => kr === r && kc === c && value === this.currentTurnPlayer.colour
+    );
+
+    if (matchedEntry) {
+        let [key, value] = matchedEntry; // key = [kr, kc], value = color
+        this.boardService.castle(key); // pasamos la key que coincidió
     }
   }
 }
