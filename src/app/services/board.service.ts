@@ -197,9 +197,100 @@ export class BoardService {
   }
 
   castle(destinationSquare: [number, number]) {
+    let kingSquare: Square;
+    let rookSquare: Square;
+
     switch (destinationSquare) {
       case [7,6]:
-        
+        kingSquare = this.getKingSquare("white")!;
+        rookSquare = this.board()[7][7];
+
+        this.board()[7][6].piece = kingSquare!.piece;
+        kingSquare!.piece = rookSquare.piece;
+
+        this.resetSquaresHighlight();
+
+        for (let row = 0; row < this.board().length; row++) {
+          for (let col = 0; col < this.board()[row].length; col++) {
+            let square = this.board()[row][col];
+            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
+              square.highlight = "none";
+            }
+          }
+        }
+
+        kingSquare!.highlight = "last-move-from";
+        this.board()[7][6].highlight = "last-move-to";
+
+        break;
+
+      case [7,2]:
+        kingSquare = this.getKingSquare("white")!;
+        rookSquare = this.board()[7][0];
+
+        this.board()[7][2].piece = kingSquare!.piece;
+        kingSquare!.piece = rookSquare.piece;
+
+        this.resetSquaresHighlight();
+
+        for (let row = 0; row < this.board().length; row++) {
+          for (let col = 0; col < this.board()[row].length; col++) {
+            let square = this.board()[row][col];
+            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
+              square.highlight = "none";
+            }
+          }
+        }
+
+        kingSquare!.highlight = "last-move-from";
+        this.board()[7][2].highlight = "last-move-to";
+
+        break;
+
+      case [0,6]:
+        kingSquare = this.getKingSquare("black")!;
+        rookSquare = this.board()[0][7];
+
+        this.board()[0][6].piece = kingSquare!.piece;
+        kingSquare!.piece = rookSquare.piece;
+
+        this.resetSquaresHighlight();
+
+        for (let row = 0; row < this.board().length; row++) {
+          for (let col = 0; col < this.board()[row].length; col++) {
+            let square = this.board()[row][col];
+            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
+              square.highlight = "none";
+            }
+          }
+        }
+
+        kingSquare!.highlight = "last-move-from";
+        this.board()[0][6].highlight = "last-move-to";
+
+        break;
+
+      case [0,2]:
+        kingSquare = this.getKingSquare("black")!;
+        rookSquare = this.board()[0][0];
+
+        this.board()[0][2].piece = kingSquare!.piece;
+        kingSquare!.piece = rookSquare.piece;
+
+        this.resetSquaresHighlight();
+
+        for (let row = 0; row < this.board().length; row++) {
+          for (let col = 0; col < this.board()[row].length; col++) {
+            let square = this.board()[row][col];
+            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
+              square.highlight = "none";
+            }
+          }
+        }
+
+        kingSquare!.highlight = "last-move-from";
+        this.board()[0][2].highlight = "last-move-to";
+
         break;
     }
   }

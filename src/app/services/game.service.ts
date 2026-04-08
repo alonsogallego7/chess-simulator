@@ -23,6 +23,10 @@ export class GameService {
   isCheck: boolean = false;
   checkAttackLine: [number, number][] = [];
 
+  isGameOver: boolean = false;
+  gameOverReason: string = '';
+  halfMoveClock: number = 0;
+
   castlingKeyPositionsMap = new Map<[number, number], string>([
     [[7,6], "white"],
     [[7,2], "white"],
@@ -35,6 +39,10 @@ export class GameService {
     this.selectedPieceValidMoves = [];
     this.movesHistory = [];
 
+    this.isGameOver = false;
+    this.gameOverReason = '';
+    this.halfMoveClock = 0;
+
     this.currentTurnPlayer = this.playerService.getPlayerByColour("white");
   }
 
@@ -44,9 +52,13 @@ export class GameService {
 
     let [player1, player2] = this.playerService.getPlayers();
     this.currentTurnPlayer = this.currentTurnPlayer === player1 ? player2 : player1;
+
+    this.checkEndgameConditions();
   }
 
   handleSquareClick(square: Square) {
+    if (this.isGameOver) return;
+
     this.boardService.resetSquaresHighlight();
 
     // Same colour piece
@@ -98,10 +110,17 @@ export class GameService {
           ([row, col]) => row === square.coordinates[0] && col === square.coordinates[1]
         )
       ) {
+        let pieceMovedInfo = this.selectedSquare!.piece;
         let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
         this.boardService.movePiece(move);
 
         this.movesHistory.push(move);
+
+        if (pieceMovedInfo?.name === "pawn") {
+          this.halfMoveClock = 0;
+        } else {
+          this.halfMoveClock++;
+        }
       }
     }
   }
@@ -118,6 +137,7 @@ export class GameService {
 
       let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
       this.boardService.movePiece(move);
+      this.halfMoveClock = 0;
     }
   }
 
@@ -150,5 +170,63 @@ export class GameService {
         let [key, value] = matchedEntry; // key = [kr, kc], value = color
         this.boardService.castle(key); // pasamos la key que coincidió
     }
+  }
+
+  checkEndgameConditions() {
+    if (this.halfMoveClock >= 100) {
+      this.isGameOver = true;
+      this.gameOverReason = "Empate (Regla de los 50 movimientos)";
+      return;
+    }
+
+    if (this.hasInsufficientMaterial()) {
+      this.isGameOver = true;
+      this.gameOverReason = "Empate (Insuficiencia de material)";
+      return;
+    }
+
+    let hasAnyValidMove = false;
+    for (let row of this.boardService.board()) {
+      for (let square of row) {
+        if (square.piece?.colour === this.currentTurnPlayer.colour) {
+          let validMoves = this.isCheck ? 
+            this.boardService.getValidMovesToDefendCheckByPiece(this.checkAttackLine, square.piece) :
+            this.boardService.getValidMovesByPiece(square.piece);
+          
+          if (validMoves.length > 0) {
+            hasAnyValidMove = true;
+            break;
+          }
+        }
+      }
+      if (hasAnyValidMove) break;
+    }
+
+    if (!hasAnyValidMove) {
+      this.isGameOver = true;
+      if (this.isCheck) {
+        this.gameOverReason = "Jaque Mate! Gana " + (this.currentTurnPlayer.colour === "white" ? "Negras" : "Blancas");
+      } else {
+        this.gameOverReason = "Empate (Ahogado / Stalemate)";
+      }
+    }
+  }
+
+  hasInsufficientMaterial(): boolean {
+    let pieces: Piece[] = [];
+    for (let row of this.boardService.board()) {
+      for (let square of row) {
+        if (square.piece) pieces.push(square.piece);
+      }
+    }
+    
+    if (pieces.length === 2) return true; // Solo reyes
+    
+    if (pieces.length === 3) {
+      if (pieces.some(p => p.name === 'knight' || p.name === 'bishop')) {
+        return true; 
+      }
+    }
+    return false;
   }
 }

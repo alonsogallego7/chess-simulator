@@ -1,18 +1,25 @@
-<div id="complete-board">
-  <div id="board">
-    @for (row of board; track row) {
-      @for (square of row; track square) {
-        <div (click)="gameService.handleSquareClick(square)" [ngClass]="[
-          square.squareClass,
-          square.squareColorClass,
-          square.highlight != 'none' ? square.highlight : ''
-        ]"
-        >
-          @if (square.piece && square.piece.selectable) {
-            <img [src]="'assets/pieces/' + square.piece.colour + '_' + square.piece.name + '.svg.png'"/>
-          }
-        </div>
+<div id="container">
+  @if (gameService.isGameOver) {
+    <div class="game-over-banner">
+      <h2>{{ gameService.gameOverReason }}</h2>
+    </div>
+  }
+  <div id="complete-board">
+    <div id="board">
+      @for (row of board; track row) {
+        @for (square of row; track square) {
+          <div (click)="gameService.handleSquareClick(square)" [ngClass]="[
+            square.squareClass,
+            square.squareColorClass,
+            square.highlight != 'none' ? square.highlight : ''
+          ]"
+          >
+            @if (square.piece && square.piece.selectable) {
+              <img [src]="'assets/pieces/' + square.piece.colour + '_' + square.piece.name + '.svg.png'"/>
+            }
+          </div>
+        }
       }
-    }
+    </div>
   </div>
 </div>
