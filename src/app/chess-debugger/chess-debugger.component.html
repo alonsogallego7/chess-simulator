@@ -1,0 +1,59 @@
+<div class="debugger-container">
+  <header>
+    <h2>Chess Engine Debugger</h2>
+    <div class="actions">
+      <button (click)="resetGame()" class="btn-reset">Reset Game</button>
+    </div>
+  </header>
+
+  <section class="state-summary">
+    <h3>Game State</h3>
+    <div class="state-grid">
+      <div class="state-item"><strong>Turn:</strong> {{ gameService.currentTurnPlayer.colour }}</div>
+      <div class="state-item"><strong>Is Check:</strong> {{ gameService.isCheck }}</div>
+      <div class="state-item"><strong>Is Game Over:</strong> {{ gameService.isGameOver }}</div>
+      <div class="state-item"><strong>Reason:</strong> {{ gameService.gameOverReason || 'None' }}</div>
+    </div>
+  </section>
+
+  <section class="move-input">
+    <h3>Execute Move</h3>
+    <div class="input-grid">
+      <div class="coord-group">
+        <label>From:</label>
+        <input type="number" [ngModel]="fromRow()" (ngModelChange)="fromRow.set($event)" min="0" max="7" placeholder="R">
+        <input type="number" [ngModel]="fromCol()" (ngModelChange)="fromCol.set($event)" min="0" max="7" placeholder="C">
+      </div>
+      <div class="coord-group">
+        <label>To:</label>
+        <input type="number" [ngModel]="toRow()" (ngModelChange)="toRow.set($event)" min="0" max="7" placeholder="R">
+        <input type="number" [ngModel]="toCol()" (ngModelChange)="toCol.set($event)" min="0" max="7" placeholder="C">
+      </div>
+      <button (click)="executeMove()" class="btn-execute">Run Move</button>
+    </div>
+  </section>
+
+  <section class="inspector">
+    <h3>Square Inspector</h3>
+    <div class="inspector-controls">
+      <label>Quick Inspect [R, C]:</label>
+      <input #ir type="number" value="0">
+      <input #ic type="number" value="0">
+      <button (click)="inspectSquare(+ir.value, +ic.value)">Inspect</button>
+    </div>
+
+    <div *ngIf="selectedInfo()" class="info-card">
+      <h4>Details for [{{ selectedInfo().coordinates }}]</h4>
+      <pre>{{ selectedInfo() | json }}</pre>
+    </div>
+  </section>
+
+  <section class="history">
+    <h3>Move History ({{ gameService.movesHistory.length }})</h3>
+    <ul class="history-list">
+      <li *ngFor="let move of gameService.movesHistory; let i = index">
+        {{ i + 1 }}. [{{ move.from }}] → [{{ move.to }}]
+      </li>
+    </ul>
+  </section>
+</div>
