@@ -87,7 +87,8 @@ export class GameService {
       if (square.piece) {
         this.handlePieceCapture(square);
       } else {
-        if (this.selectedSquare!.piece!.name == "king") {
+        const piece = this.selectedSquare!.piece!;
+        if (piece.name === "king" && Math.abs(this.selectedSquare!.coordinates[1] - square.coordinates[1]) === 2) {
           this.handleCastling(square);
         } else {
           this.handlePieceMove(square);
@@ -160,16 +161,7 @@ export class GameService {
   }
 
   handleCastling(destinationSquare: Square) {
-    let [r, c] = destinationSquare.coordinates;
-
-    let matchedEntry = Array.from(this.castlingKeyPositionsMap.entries()).find(
-        ([[kr, kc], value]) => kr === r && kc === c && value === this.currentTurnPlayer.colour
-    );
-
-    if (matchedEntry) {
-        let [key, value] = matchedEntry; // key = [kr, kc], value = color
-        this.boardService.castle(key); // pasamos la key que coincidió
-    }
+    this.boardService.castle(destinationSquare.coordinates, this.currentTurnPlayer.colour);
   }
 
   checkEndgameConditions() {

@@ -46,7 +46,7 @@ export class BoardService {
     this.board.set(newBoard);
   }
 
-  getValidMovesByPiece(piece: Piece | null): [number, number][] {
+  getValidMovesByPiece(piece: Piece | null, ignoreCastling: boolean = false): [number, number][] {
     if (!piece) return [];
 
     let square = this.getSquareByPiece(piece);
@@ -57,16 +57,15 @@ export class BoardService {
 
     let validMoves: [number, number][] = [];
 
-    let pawnMoves = 0; // To limit the number of moves of the pawn to 1 when it's not its first move
-
+    // Normal moves
     for (let move of abstractMoves) {
       let row = startRow;
       let col = startCol;
+      let pawnMoves = 0; 
 
       do {
         row += move.rowOffset;
         col += move.colOffset;
-
 
         if (row < 0 || row > 7 || col < 0 || col > 7) break;
 
@@ -75,44 +74,75 @@ export class BoardService {
         if (piece.name === "pawn") {
           if (move.colOffset === 0) {
             if ((piece.colour == "white" && row > 3) || (piece.colour == "black" && row < 5)) {
-              if (targetSquare.piece) {
-                break;
-              }
-
+              if (targetSquare.piece) break;
               validMoves.push([row, col]);
             } else if (pawnMoves < 1) {
-              if (targetSquare.piece) {
-                break;
-              }
-
+              if (targetSquare.piece) break;
               validMoves.push([row, col]);
-
               pawnMoves++;
             }
           } else {
             if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
               validMoves.push([row, col]);
             }
-
             break;
           }
         } else {
-          if (targetSquare.piece && targetSquare.piece.colour == piece.colour) {
-            break;
-          }
-
-          if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
-            validMoves.push([row, col]);
-            break;
-          }
-
+          if (targetSquare.piece && targetSquare.piece.colour == piece.colour) break;
           validMoves.push([row, col]);
+          if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) break;
         }
 
       } while (move.repeatable);
     }
 
+    // Filter out moves that would put the king in check
+    if (piece.name === "king") {
+      const enemyColour = piece.colour === "white" ? "black" : "white";
+      validMoves = validMoves.filter(move => !this.isSquareUnderAttack(move, enemyColour));
+    }
+
+    // Castling moves
+    if (piece.name === "king" && !piece.hasMoved && !ignoreCastling) {
+      const enemyColour = piece.colour === "white" ? "black" : "white";
+      
+      // Check if King is in check (cannot castle out of check)
+      if (!this.isSquareUnderAttack([startRow, startCol], enemyColour)) {
+        // King-side
+        this.addCastlingMove(piece, startRow, 7, [startRow, 5], [startRow, 6], validMoves);
+        // Queen-side
+        this.addCastlingMove(piece, startRow, 0, [startRow, 3], [startRow, 2], validMoves, [startRow, 1]);
+      }
+    }
+
     return validMoves;
+  }
+
+  private addCastlingMove(
+    king: Piece, 
+    row: number, 
+    rookCol: number, 
+    passSquare: [number, number], 
+    destSquare: [number, number], 
+    validMoves: [number, number][],
+    additionalEmptySquare?: [number, number]
+  ) {
+    const rookSquare = this.board()[row][rookCol];
+    const enemyColour = king.colour === "white" ? "black" : "white";
+
+    if (rookSquare.piece?.name === "rook" && !rookSquare.piece.hasMoved) {
+      const squaresToCheckEmpty = [passSquare, destSquare];
+      if (additionalEmptySquare) squaresToCheckEmpty.push(additionalEmptySquare);
+
+      const allEmpty = squaresToCheckEmpty.every(([r, c]) => !this.board()[r][c].piece);
+      if (allEmpty) {
+        const pathSafe = !this.isSquareUnderAttack(passSquare, enemyColour) && 
+                         !this.isSquareUnderAttack(destSquare, enemyColour);
+        if (pathSafe) {
+          validMoves.push(destSquare);
+        }
+      }
+    }
   }
 
   getValidMovesToDefendCheckByPiece(checkAttackLine: [number, number][], piece: Piece | null) {
@@ -180,6 +210,7 @@ export class BoardService {
 
     squareFrom.piece = null;
     squareTo.piece = piece;
+    if (piece) piece.hasMoved = true;
 
     this.resetSquaresHighlight();
 
@@ -196,103 +227,60 @@ export class BoardService {
     squareTo.highlight = "last-move-to";
   }
 
-  castle(destinationSquare: [number, number]) {
-    let kingSquare: Square;
-    let rookSquare: Square;
+  castle(kingDest: [number, number], color: "white" | "black") {
+    const row = color === "white" ? 7 : 0;
+    const isKingSide = kingDest[1] === 6;
+    
+    const kingSquare = this.getKingSquare(color)!;
+    const rookCol = isKingSide ? 7 : 0;
+    const rookDestCol = isKingSide ? 5 : 3;
+    
+    const kingDestSquare = this.board()[row][kingDest[1]];
+    const rookSquare = this.board()[row][rookCol];
+    const rookDestSquare = this.board()[row][rookDestCol];
 
-    switch (destinationSquare) {
-      case [7,6]:
-        kingSquare = this.getKingSquare("white")!;
-        rookSquare = this.board()[7][7];
+    const kingPiece = kingSquare.piece;
+    const rookPiece = rookSquare.piece;
 
-        this.board()[7][6].piece = kingSquare!.piece;
-        kingSquare!.piece = rookSquare.piece;
+    // Move King
+    kingSquare.piece = null;
+    kingDestSquare.piece = kingPiece;
+    if (kingPiece) kingPiece.hasMoved = true;
 
-        this.resetSquaresHighlight();
+    // Move Rook
+    rookSquare.piece = null;
+    rookDestSquare.piece = rookPiece;
+    if (rookPiece) rookPiece.hasMoved = true;
 
-        for (let row = 0; row < this.board().length; row++) {
-          for (let col = 0; col < this.board()[row].length; col++) {
-            let square = this.board()[row][col];
-            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
-              square.highlight = "none";
+    this.resetSquaresHighlight();
+
+    // Highlight the move
+    kingSquare.highlight = "last-move-from";
+    kingDestSquare.highlight = "last-move-to";
+  }
+
+  isSquareUnderAttack(coordinate: [number, number], enemyColour: "white" | "black"): boolean {
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        let square = this.board()[row][col];
+        if (square.piece && square.piece.colour === enemyColour) {
+          if (square.piece.name === "pawn") {
+            let direction = enemyColour === "white" ? -1 : 1;
+            let captureCols = [col - 1, col + 1];
+            if (row + direction === coordinate[0] && captureCols.includes(coordinate[1])) {
+              return true;
+            }
+          } else {
+            // Use ignoreCastling = true to prevent infinite recursion
+            let validMoves = this.getValidMovesByPiece(square.piece, true);
+            if (validMoves.some(([r, c]) => r === coordinate[0] && c === coordinate[1])) {
+              return true;
             }
           }
         }
-
-        kingSquare!.highlight = "last-move-from";
-        this.board()[7][6].highlight = "last-move-to";
-
-        break;
-
-      case [7,2]:
-        kingSquare = this.getKingSquare("white")!;
-        rookSquare = this.board()[7][0];
-
-        this.board()[7][2].piece = kingSquare!.piece;
-        kingSquare!.piece = rookSquare.piece;
-
-        this.resetSquaresHighlight();
-
-        for (let row = 0; row < this.board().length; row++) {
-          for (let col = 0; col < this.board()[row].length; col++) {
-            let square = this.board()[row][col];
-            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
-              square.highlight = "none";
-            }
-          }
-        }
-
-        kingSquare!.highlight = "last-move-from";
-        this.board()[7][2].highlight = "last-move-to";
-
-        break;
-
-      case [0,6]:
-        kingSquare = this.getKingSquare("black")!;
-        rookSquare = this.board()[0][7];
-
-        this.board()[0][6].piece = kingSquare!.piece;
-        kingSquare!.piece = rookSquare.piece;
-
-        this.resetSquaresHighlight();
-
-        for (let row = 0; row < this.board().length; row++) {
-          for (let col = 0; col < this.board()[row].length; col++) {
-            let square = this.board()[row][col];
-            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
-              square.highlight = "none";
-            }
-          }
-        }
-
-        kingSquare!.highlight = "last-move-from";
-        this.board()[0][6].highlight = "last-move-to";
-
-        break;
-
-      case [0,2]:
-        kingSquare = this.getKingSquare("black")!;
-        rookSquare = this.board()[0][0];
-
-        this.board()[0][2].piece = kingSquare!.piece;
-        kingSquare!.piece = rookSquare.piece;
-
-        this.resetSquaresHighlight();
-
-        for (let row = 0; row < this.board().length; row++) {
-          for (let col = 0; col < this.board()[row].length; col++) {
-            let square = this.board()[row][col];
-            if (square.highlight === "last-move-from" || square.highlight === "last-move-to") {
-              square.highlight = "none";
-            }
-          }
-        }
-
-        kingSquare!.highlight = "last-move-from";
-        this.board()[0][2].highlight = "last-move-to";
-
-        break;
+      }
     }
+    return false;
   }
 
   getSquareByPiece(piece: Piece): Square | null {
