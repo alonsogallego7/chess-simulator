@@ -97,7 +97,7 @@ export class BoardService {
     }
 
     // Filter out moves that would put the king in check
-    if (piece.name === "king") {
+    if (piece.name === "king" && !ignoreCastling) {
       const enemyColour = piece.colour === "white" ? "black" : "white";
       validMoves = validMoves.filter(move => !this.isSquareUnderAttack(move, enemyColour));
     }
