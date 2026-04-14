@@ -43,6 +43,8 @@ export class GameService {
     this.isGameOver = false;
     this.gameOverReason = '';
     this.halfMoveClock = 0;
+    this.isCheck = false;
+    this.checkAttackLine = [];
 
     this.currentTurnPlayer = this.playerService.getPlayerByColour("white");
   }
@@ -170,8 +172,11 @@ export class GameService {
 
       this.isCheck = true;
       this.checkAttackLine = this.boardService.getSquaresBetweenPieces(this.selectedSquare, kingSquare);
+      // Ensure the attacker itself is considered a blockable/capturable square!
+      this.checkAttackLine.push(this.selectedSquare!.coordinates);
     } else {
       this.isCheck = false;
+      this.checkAttackLine = [];
     }
   }
 

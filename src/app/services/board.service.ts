@@ -108,26 +108,45 @@ export class BoardService {
       } while (move.repeatable);
     }
 
-    // Filter out moves that would put the king in check
-    if (piece.name === "king" && !ignoreCastling) {
-      const enemyColour = piece.colour === "white" ? "black" : "white";
-      validMoves = validMoves.filter(move => !this.isSquareUnderAttack(move, enemyColour));
+    let finalValidMoves: [number, number][] = [];
+    const enemyColour = piece.colour === "white" ? "black" : "white";
+
+    if (ignoreCastling) {
+      return validMoves;
     }
 
-    // Castling moves
-    if (piece.name === "king" && !piece.hasMoved && !ignoreCastling) {
-      const enemyColour = piece.colour === "white" ? "black" : "white";
+    for (let move of validMoves) {
+      let [r, c] = move;
+      let targetSquare = this.board()[r][c];
+
+      let originalTargetPiece = targetSquare.piece;
+      targetSquare.piece = piece;
+      square.piece = null;
+
+      let currentKingCoords = piece.name === "king" ? [r, c] as [number, number] : this.getKingSquare(piece.colour)?.coordinates;
       
-      // Check if King is in check (cannot castle out of check)
-      if (!this.isSquareUnderAttack([startRow, startCol], enemyColour)) {
-        // King-side
-        this.addCastlingMove(piece, startRow, 7, [startRow, 5], [startRow, 6], validMoves);
-        // Queen-side
-        this.addCastlingMove(piece, startRow, 0, [startRow, 3], [startRow, 2], validMoves, [startRow, 1]);
+      let isSafe = true;
+      if (currentKingCoords) {
+        isSafe = !this.isSquareUnderAttack(currentKingCoords, enemyColour);
+      }
+
+      square.piece = piece;
+      targetSquare.piece = originalTargetPiece;
+
+      if (isSafe) {
+        finalValidMoves.push(move);
       }
     }
 
-    return validMoves;
+    // Castling moves
+    if (piece.name === "king" && !piece.hasMoved) {
+      if (!this.isSquareUnderAttack([startRow, startCol], enemyColour)) {
+        this.addCastlingMove(piece, startRow, 7, [startRow, 5], [startRow, 6], finalValidMoves);
+        this.addCastlingMove(piece, startRow, 0, [startRow, 3], [startRow, 2], finalValidMoves, [startRow, 1]);
+      }
+    }
+
+    return finalValidMoves;
   }
 
   private addCastlingMove(
