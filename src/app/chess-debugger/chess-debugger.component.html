@@ -16,14 +16,14 @@
     </div>
   </section>
 
-  <section class="simulation-input" style="margin-top: 1rem; margin-bottom: 1rem;">
+  <section class="simulation-input">
     <h3>Simulator</h3>
     <div class="simulator-controls">
       <textarea [ngModel]="movesInput()" (ngModelChange)="movesInput.set($event)" 
                 placeholder="Paste algebraic moves e.g. e2e4 e7e5 f1c4"
-                rows="3" style="width:100%; margin-bottom: 8px; font-family: monospace; padding: 4px;">
+                rows="3">
       </textarea>
-      <div class="sim-actions" style="display: flex; gap: 8px; align-items: center;">
+      <div class="sim-actions-row">
         <label>Delay (ms): 
           <input type="number" [ngModel]="simulationDelayMs()" (ngModelChange)="simulationDelayMs.set($event)" min="0" step="100" style="width: 80px;">
         </label>
@@ -50,20 +50,7 @@
     </div>
   </section>
 
-  <section class="inspector">
-    <h3>Square Inspector</h3>
-    <div class="inspector-controls">
-      <label>Quick Inspect [R, C]:</label>
-      <input #ir type="number" value="0">
-      <input #ic type="number" value="0">
-      <button (click)="inspectSquare(+ir.value, +ic.value)">Inspect</button>
-    </div>
 
-    <div *ngIf="selectedInfo()" class="info-card">
-      <h4>Details for [{{ selectedInfo().coordinates }}]</h4>
-      <pre>{{ selectedInfo() | json }}</pre>
-    </div>
-  </section>
 
   <section class="history">
     <h3>Move History ({{ gameService.movesHistory.length }})</h3>

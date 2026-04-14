@@ -21,7 +21,7 @@ export class ChessDebuggerComponent {
   toRow = signal<number | null>(null);
   toCol = signal<number | null>(null);
 
-  selectedInfo = signal<any>(null);
+
 
   movesInput = signal<string>('');
   simulationDelayMs = signal<number>(500);
@@ -62,22 +62,6 @@ export class ChessDebuggerComponent {
     this.gameService.handleSquareClick(fromSquare);
     // Programmatically move
     this.gameService.handleSquareClick(toSquare);
-  }
-
-  inspectSquare(row: number, col: number) {
-    const square = this.boardService.board()[row][col];
-    if (square) {
-      this.selectedInfo.set({
-        coordinates: square.coordinates,
-        piece: square.piece ? {
-          name: square.piece.name,
-          colour: square.piece.colour,
-          hasMoved: square.piece.hasMoved,
-          validMoves: this.boardService.getValidMovesByPiece(square.piece)
-        } : null,
-        highlight: square.highlight
-      });
-    }
   }
 
   resetGame() {
