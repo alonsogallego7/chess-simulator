@@ -38,6 +38,7 @@ export class GameService {
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
     this.movesHistory = [];
+    this.boardService.lastMove = null;
 
     this.isGameOver = false;
     this.gameOverReason = '';
@@ -90,6 +91,8 @@ export class GameService {
         const piece = this.selectedSquare!.piece!;
         if (piece.name === "king" && Math.abs(this.selectedSquare!.coordinates[1] - square.coordinates[1]) === 2) {
           this.handleCastling(square);
+        } else if (piece.name === "pawn" && this.selectedSquare!.coordinates[1] !== square.coordinates[1]) {
+          this.handleEnPassant(square);
         } else {
           this.handlePieceMove(square);
         }
@@ -115,10 +118,14 @@ export class GameService {
         let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
         this.boardService.movePiece(move);
 
+        this.boardService.lastMove = move;
         this.movesHistory.push(move);
 
         if (pieceMovedInfo?.name === "pawn") {
           this.halfMoveClock = 0;
+          if (square.coordinates[0] === 0 || square.coordinates[0] === 7) {
+             this.boardService.promotePawn(square, "queen");
+          }
         } else {
           this.halfMoveClock++;
         }
@@ -136,9 +143,17 @@ export class GameService {
     ) {
       square.piece = null;
 
+      let pieceMovedInfo = this.selectedSquare!.piece;
       let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
       this.boardService.movePiece(move);
+      
+      this.boardService.lastMove = move;
+      this.movesHistory.push(move);
       this.halfMoveClock = 0;
+
+      if (pieceMovedInfo?.name === "pawn" && (square.coordinates[0] === 0 || square.coordinates[0] === 7)) {
+        this.boardService.promotePawn(square, "queen");
+      }
     }
   }
 
@@ -162,6 +177,23 @@ export class GameService {
 
   handleCastling(destinationSquare: Square) {
     this.boardService.castle(destinationSquare.coordinates, this.currentTurnPlayer.colour);
+    let move = new Move(this.selectedSquare!.coordinates, destinationSquare.coordinates);
+    this.boardService.lastMove = move;
+    this.movesHistory.push(move);
+    this.halfMoveClock++;
+  }
+
+  handleEnPassant(square: Square) {
+    let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
+    this.boardService.movePiece(move);
+
+    let backRow = this.selectedSquare!.coordinates[0];
+    let targCol = square.coordinates[1];
+    this.boardService.board()[backRow][targCol].piece = null;
+
+    this.boardService.lastMove = move;
+    this.movesHistory.push(move);
+    this.halfMoveClock = 0;
   }
 
   checkEndgameConditions() {

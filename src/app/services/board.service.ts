@@ -11,6 +11,7 @@ import { GameService } from './game.service';
 export class BoardService {
   board: WritableSignal<Square[][]> = signal([]);
   gameService: GameService;
+  lastMove: Move | null = null;
 
   setBoard() {
     let newBoard: Square[][] = [];
@@ -84,6 +85,17 @@ export class BoardService {
           } else {
             if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
               validMoves.push([row, col]);
+            } else if (!targetSquare.piece && this.lastMove) {
+              // En Passant check
+              let [lfR, lfC] = this.lastMove.from;
+              let [ltR, ltC] = this.lastMove.to;
+              let lastMovedPiece = this.board()[ltR][ltC].piece;
+              
+              if (lastMovedPiece?.name === 'pawn' && lastMovedPiece.colour !== piece.colour && Math.abs(lfR - ltR) === 2) {
+                if (ltR === startRow && ltC === col) {
+                   validMoves.push([row, col]);
+                }
+              }
             }
             break;
           }
@@ -351,6 +363,13 @@ export class BoardService {
   setDebugHighlight(r: number, c: number) {
     if (r >= 0 && r < 8 && c >= 0 && c < 8) {
       this.board()[r][c].highlight = "debug";
+    }
+  }
+
+  promotePawn(square: Square, toPieceType: string = "queen") {
+    if (square.piece && square.piece.name === "pawn") {
+      square.piece = PieceFactory.createPiece(square.piece.colour, toPieceType);
+      square.piece.hasMoved = true;
     }
   }
 }
