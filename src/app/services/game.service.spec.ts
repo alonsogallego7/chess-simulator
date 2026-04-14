@@ -248,4 +248,119 @@ describe('GameService - 32 Automated Match Tests', () => {
     expect(boardService.board()[d5[0]][d5[1]].piece?.name).toBe('pawn');
     expect(boardService.board()[d5[0]][d5[1]].piece?.colour).toBe('white');
   });
+
+  /* ================== EXTRA 18 TESTS (33 to 50) ================== */
+
+  it('Game 33: Invalid pawn jump of 3 squares', () => {
+    playSequence('e2e5');
+    expect(gameService.movesHistory.length).toBe(0);
+  });
+
+  it('Game 34: Backwards pawn move is illegal', () => {
+    playSequence('e2e4 e7e5 e4e3');
+    const e3 = parseCoordinate('e3');
+    expect(boardService.board()[e3[0]][e3[1]].piece).toBeNull();
+  });
+
+  it('Game 35: Same square move selection is ignored', () => {
+    playSequence('e2e2');
+    expect(gameService.movesHistory.length).toBe(0);
+  });
+
+  it('Game 36: King tries to castle through own piece (blocked)', () => {
+    playSequence('e2e4 e7e5 e1g1');
+    const g1 = parseCoordinate('g1'); 
+    expect(boardService.board()[g1[0]][g1[1]].piece?.name).toBe('knight');
+  });
+
+  it('Game 37: En Passant window expires via another piece acting', () => {
+    playSequence('e2e4 a7a6 e4e5 d7d5 g1f3 b8c6 e5d6'); // e5d6 delayed
+    const d5 = parseCoordinate('d5');
+    expect(boardService.board()[d5[0]][d5[1]].piece?.name).toBe('pawn');
+    expect(boardService.board()[d5[0]][d5[1]].piece?.colour).toBe('black');
+  });
+
+  it('Game 38: King successfully escapes check to safe square', () => {
+    playSequence('e2e4 e7e5 f1c4 d7d6 c4f7 e8d7'); // escapes to d7
+    const d7 = parseCoordinate('d7');
+    expect(boardService.board()[d7[0]][d7[1]].piece?.name).toBe('king');
+    expect(boardService.board()[d7[0]][d7[1]].piece?.colour).toBe('black');
+  });
+
+  it('Game 39: King blocked from escaping check by friendly piece', () => {
+    playSequence('e2e4 e7e5 d1h5 f8c5 h5f7 e8e7 g1f3 g8h6');
+    // e8 to f8 or d8 is blocked by friendly pieces. f7 is supported, e7 is supported by Queen.
+    const e8 = parseCoordinate('e8');
+    expect(boardService.board()[e8[0]][e8[1]].piece?.name).toBe('king');
+    expect(gameService.isGameOver).toBeTrue(); // Smothered Checkmate!
+  });
+
+  it('Game 40: Rook blocked from natively passing friendly units', () => {
+    playSequence('a1a3');
+    expect(gameService.movesHistory.length).toBe(0);
+  });
+
+  it('Game 41: Bishop natively blocked by friendly pieces', () => {
+    playSequence('c1e3');
+    expect(gameService.movesHistory.length).toBe(0);
+  });
+
+  it('Game 42: White Pawn invalid diagonal empty-square traversal', () => {
+    playSequence('e2f3');
+    expect(gameService.movesHistory.length).toBe(0);
+  });
+
+  it('Game 43: Black Pawn invalid diagonal empty-square traversal', () => {
+    playSequence('e2e4 d7c6');
+    expect(gameService.movesHistory.length).toBe(1); // Only white moved
+  });
+
+  it('Game 44: White King invalid castling Queenside natively blocked', () => {
+    playSequence('d2d4 e7e5 e1c1'); 
+    const e1 = parseCoordinate('e1');
+    expect(boardService.board()[e1[0]][e1[1]].piece?.name).toBe('king'); // Did not castle
+  });
+
+  it('Game 45: Pawn Promotion for White on the h file', () => {
+    playSequence('h2h4 a7a5 h4h5 a5a4 h5h6 a4a3 h6g7 a3b2 g7h8');
+    const h8 = parseCoordinate('h8');
+    expect(boardService.board()[h8[0]][h8[1]].piece?.name).toBe('queen');
+    expect(boardService.board()[h8[0]][h8[1]].piece?.colour).toBe('white');
+  });
+
+  it('Game 46: Taking own piece natively failing', () => {
+    playSequence('g1h1'); 
+    expect(gameService.movesHistory.length).toBe(0);
+  });
+
+  it('Game 47: 50 move rule triggering tie correctly', () => {
+    gameService.startGame();
+    boardService.setBoard();
+    gameService.halfMoveClock = 100;
+    gameService.checkEndgameConditions();
+    expect(gameService.isGameOver).toBeTrue();
+    expect(gameService.gameOverReason).toContain('Empate (Regla de los 50 movimientos)');
+  });
+
+  it('Game 48: Cannot attempt to process clicks without valid square content', () => {
+    gameService.startGame(); boardService.setBoard();
+    const emptySquare = boardService.board()[4][4];
+    gameService.handleSquareClick(emptySquare);
+    expect(gameService.selectedSquare).toBeNull();
+  });
+
+  it('Game 49: King cannot move into an attacked square unprompted', () => {
+    playSequence('e2e4 d7d5 f1d3 d5e4 c2c3 e4d3 e1e2'); // e2 attacked by d3 pawn
+    const e1 = parseCoordinate('e1');
+    expect(boardService.board()[e1[0]][e1[1]].piece?.name).toBe('king');
+  });
+
+  it('Game 50: Complex sequence resolving properly end-to-end', () => {
+    playSequence('e2e4 c7c5 g1f3 d7d6 d2d4 c5d4 f3d4 g8f6 b1c3 a7a6 c1e3 e7e5 d4b3 c8e6 d1d2 f8e7 e1c1 e8g8');
+    // Testing classical Sicilian Najdorf variation executing castlings perfectly
+    const c1 = parseCoordinate('c1');
+    expect(boardService.board()[c1[0]][c1[1]].piece?.name).toBe('king');
+    const g8 = parseCoordinate('g8');
+    expect(boardService.board()[g8[0]][g8[1]].piece?.name).toBe('king');
+  });
 });
