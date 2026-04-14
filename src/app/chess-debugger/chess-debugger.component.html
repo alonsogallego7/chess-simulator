@@ -16,6 +16,23 @@
     </div>
   </section>
 
+  <section class="simulation-input" style="margin-top: 1rem; margin-bottom: 1rem;">
+    <h3>Simulator</h3>
+    <div class="simulator-controls">
+      <textarea [ngModel]="movesInput()" (ngModelChange)="movesInput.set($event)" 
+                placeholder="Paste algebraic moves e.g. e2e4 e7e5 f1c4"
+                rows="3" style="width:100%; margin-bottom: 8px; font-family: monospace; padding: 4px;">
+      </textarea>
+      <div class="sim-actions" style="display: flex; gap: 8px; align-items: center;">
+        <label>Delay (ms): 
+          <input type="number" [ngModel]="simulationDelayMs()" (ngModelChange)="simulationDelayMs.set($event)" min="0" step="100" style="width: 80px;">
+        </label>
+        <button (click)="simulateMoves()" [disabled]="isSimulating()" class="btn-execute">Play</button>
+        <button (click)="stopSimulation()" [disabled]="!isSimulating()">Stop</button>
+      </div>
+    </div>
+  </section>
+
   <section class="move-input">
     <h3>Execute Move</h3>
     <div class="input-grid">

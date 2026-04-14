@@ -23,6 +23,10 @@ export class ChessDebuggerComponent {
 
   selectedInfo = signal<any>(null);
 
+  movesInput = signal<string>('');
+  simulationDelayMs = signal<number>(500);
+  isSimulating = signal<boolean>(false);
+
   constructor() {
     effect(() => {
       // Clear previous debug highlights
@@ -79,5 +83,48 @@ export class ChessDebuggerComponent {
   resetGame() {
     this.boardService.setBoard();
     this.gameService.startGame();
+  }
+
+  parseCoordinate(coord: string): [number, number] {
+    const col = coord.charCodeAt(0) - 97; // 'a' is 97
+    const row = 8 - parseInt(coord[1], 10);
+    return [row, col];
+  }
+
+  async simulateMoves() {
+    if (this.isSimulating()) return;
+    
+    // Allow commas, newlines, tabs or multiple spaces
+    const movesList = this.movesInput().split(/[\s,]+/).filter(m => m.trim().length === 4);
+    if (movesList.length === 0) {
+      alert("No valid moves found. Use format 'e2e4 e7e5' or 'e2e4,e7e5'");
+      return;
+    }
+
+    this.isSimulating.set(true);
+    for (const moveStr of movesList) {
+      if (!this.isSimulating()) break; // Stop Simulation early
+      
+      const [fr, fc] = this.parseCoordinate(moveStr.substring(0, 2));
+      const [tr, tc] = this.parseCoordinate(moveStr.substring(2, 4));
+      
+      const fromSquare = this.boardService.board()[fr][fc];
+      const toSquare = this.boardService.board()[tr][tc];
+
+      if (!fromSquare || !toSquare) {
+        alert(`Invalid square computed from ${moveStr}: [${fr},${fc}] -> [${tr},${tc}]`);
+        break;
+      }
+
+      this.gameService.handleSquareClick(fromSquare);
+      this.gameService.handleSquareClick(toSquare);
+
+      await new Promise(res => setTimeout(res, this.simulationDelayMs()));
+    }
+    this.isSimulating.set(false);
+  }
+
+  stopSimulation() {
+    this.isSimulating.set(false);
   }
 }
