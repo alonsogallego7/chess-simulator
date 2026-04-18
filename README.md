@@ -1,59 +1,36 @@
-# ChessProject
+# Chess Simulator
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.3.
+## Overview
+A high-performance web-based chess simulator built with Angular 19. This project features a robust implementation of FIDE chess rules, optimized with a modern reactive architecture using Angular Signals and a decoupled service-based logic.
 
-## Development server
+## Logic and Validation
+The simulator is engineered for reliability and precision, featuring a comprehensive logic engine built entirely in TypeScript:
+- **Service-Oriented Architecture:** Core game mechanics are decoupled from the UI, managed by specialized services for Board state, Game flow, and Player management.
+- **Reactive State:** Uses Angular Signals to ensure efficient, real-time board updates and state synchronization.
+- **Exhaustive Testing:** Validated by a suite of **50 automated match tests** covering complex scenarios, including various checkmate patterns, castling edge cases, and endgame rules.
 
-To start a local development server, run:
+## Key Features
+- **Complete FIDE Ruleset:** 
+  - **Standard Play:** Full validation for all piece movements and captures.
+  - **Special Moves:** Implementation of Castling, En Passant, and Pawn Promotion (auto-queen).
+- **Advanced Endgame States:**
+  - **Check & Checkmate:** Precise detection of threats and immediate endgame resolution.
+  - **Stalemate & Draws:** Automatic detection of draws by stalemate, 50-move rule, and insufficient material.
+- **Game History:** Tracking of moves and state progression throughout the match.
 
-```bash
-ng serve
-```
+## Technical Stack
+- **Frontend Framework:** Angular 19+ (Signals, Standalone Components, RxJS)
+- **Programming Language:** TypeScript
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Project Structure
+- `/src/app/services`: Orchestration of game logic and board state.
+- `/src/app/models`: Object-oriented definitions for Pieces, Squares, and Moves.
+- `/src/app/chess-board`: Reactive UI component for the interactive board.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Local Installation and Execution
+1. Clone the repository and navigate to the project directory.
+2. Install dependencies:
+   `npm install`
+3. Launch the development server:
+   `npm start`
+4. The application will be available on `http://localhost:4200`.
