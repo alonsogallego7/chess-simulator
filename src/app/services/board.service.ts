@@ -213,7 +213,7 @@ export class BoardService {
     let dr = Math.sign(r2 - r1);
     let dc = Math.sign(c2 - c1);
 
-    // Solo funciona si están en línea recta o diagonal
+    // Only works if they are on a straight line or diagonal
     if (!(dr === 0 || dc === 0 || Math.abs(r2 - r1) === Math.abs(c2 - c1))) {
       return [];
     }

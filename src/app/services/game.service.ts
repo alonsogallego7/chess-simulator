@@ -204,13 +204,13 @@ export class GameService {
   checkEndgameConditions() {
     if (this.halfMoveClock >= 100) {
       this.isGameOver = true;
-      this.gameOverReason = "Empate (Regla de los 50 movimientos)";
+      this.gameOverReason = "Draw (50-move rule)";
       return;
     }
 
     if (this.hasInsufficientMaterial()) {
       this.isGameOver = true;
-      this.gameOverReason = "Empate (Insuficiencia de material)";
+      this.gameOverReason = "Draw (Insufficient material)";
       return;
     }
 
@@ -234,9 +234,9 @@ export class GameService {
     if (!hasAnyValidMove) {
       this.isGameOver = true;
       if (this.isCheck) {
-        this.gameOverReason = "Jaque Mate! Gana " + (this.currentTurnPlayer.colour === "white" ? "Negras" : "Blancas");
+        this.gameOverReason = "Checkmate! " + (this.currentTurnPlayer.colour === "white" ? "Black" : "White") + " wins";
       } else {
-        this.gameOverReason = "Empate (Ahogado / Stalemate)";
+        this.gameOverReason = "Draw (Stalemate)";
       }
     }
   }

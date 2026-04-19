@@ -45,25 +45,25 @@ describe('GameService - 32 Automated Match Tests', () => {
   it('Game 1: Scholar\'s Mate (White Checkmate)', () => {
     playSequence('e2e4 e7e5 f1c4 b8c6 d1h5 g8f6 h5f7');
     expect(gameService.isGameOver).toBeTrue();
-    expect(gameService.gameOverReason).toContain('Blancas');
+    expect(gameService.gameOverReason).toContain('White');
   });
 
   it('Game 2: Fool\'s Mate (Black Checkmate)', () => {
     playSequence('f2f3 e7e5 g2g4 d8h4');
     expect(gameService.isGameOver).toBeTrue();
-    expect(gameService.gameOverReason).toContain('Negras'); 
+    expect(gameService.gameOverReason).toContain('Black'); 
   });
 
   it('Game 3: Legal\'s Mate (White Checkmate)', () => {
     playSequence('e2e4 e7e5 g1f3 d7d6 f1c4 c8g4 b1c3 h7h6 f3e5 g4d1 c4f7 e8e7 c3d5');
     expect(gameService.isGameOver).toBeTrue();
-    expect(gameService.gameOverReason).toContain('Blancas');
+    expect(gameService.gameOverReason).toContain('White');
   });
 
   it('Game 4: Smothered Mate Trap (Black Checkmate)', () => {
     playSequence('e2e4 e7e5 g1f3 b8c6 f1c4 c6d4 f3e5 d8g5 e5f7 g5g2 h1f1 g2e4 c4e2 d4f3');
     expect(gameService.isGameOver).toBeTrue();
-    expect(gameService.gameOverReason).toContain('Negras');
+    expect(gameService.gameOverReason).toContain('Black');
   });
 
   it('Game 5: White Kingside Castling successful', () => {
@@ -339,7 +339,7 @@ describe('GameService - 32 Automated Match Tests', () => {
     gameService.halfMoveClock = 100;
     gameService.checkEndgameConditions();
     expect(gameService.isGameOver).toBeTrue();
-    expect(gameService.gameOverReason).toContain('Empate (Regla de los 50 movimientos)');
+    expect(gameService.gameOverReason).toContain('Draw (50-move rule)');
   });
 
   it('Game 48: Cannot attempt to process clicks without valid square content', () => {

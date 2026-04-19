@@ -6,6 +6,7 @@
     </div>
   </header>
 
+<!-- Hidden from user view but exists in source
   <section class="state-summary">
     <h3>Game State</h3>
     <div class="state-grid">
@@ -15,6 +16,7 @@
       <div class="state-item"><strong>Reason:</strong> {{ gameService.gameOverReason || 'None' }}</div>
     </div>
   </section>
+  -->
 
   <section class="simulation-input">
     <h3>Simulator</h3>
@@ -34,20 +36,20 @@
   </section>
 
   <section class="random-simulation">
-    <h3>Simulación Aleatoria</h3>
+    <h3>Random Simulation</h3>
     <div class="simulator-controls">
       <div class="sim-actions-row sim-row-wrap">
         <label>Delay (ms):
           <input type="number" [ngModel]="randomSimDelayMs()" (ngModelChange)="randomSimDelayMs.set($event)" min="0" step="100" style="width: 80px;">
         </label>
-        <button (click)="nextRandomMove()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Siguiente movimiento</button>
-        <button (click)="simulateRandomGame()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Simular partida</button>
-        <button (click)="stopRandomSimulation()" [disabled]="!isRandomSimulating()">Parar</button>
-        <button (click)="undoLastMove()" [disabled]="!canUndo()" class="btn-undo">← Atrás</button>
-        <button (click)="resetRandomSimulation()" class="btn-reset">Resetear</button>
+        <button (click)="nextRandomMove()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Next move</button>
+        <button (click)="simulateRandomGame()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Simulate game</button>
+        <button (click)="stopRandomSimulation()" [disabled]="!isRandomSimulating()">Stop</button>
+        <button (click)="undoLastMove()" [disabled]="!canUndo()" class="btn-undo">← Undo</button>
+        <button (click)="resetRandomSimulation()" class="btn-reset">Reset</button>
       </div>
       @if (isRandomSimulating()) {
-        <p class="sim-status">⏳ Simulando movimientos aleatorios...</p>
+        <p class="sim-status">⏳ Simulating random moves...</p>
       }
       @if (gameService.isGameOver) {
         <p class="sim-status game-over">🏁 {{ gameService.gameOverReason }}</p>
@@ -55,6 +57,7 @@
     </div>
   </section>
 
+<!-- Hidden from user view but exists in source
   <section class="move-input">
     <h3>Execute Move</h3>
     <div class="input-grid">
@@ -71,6 +74,7 @@
       <button (click)="executeMove()" class="btn-execute">Run Move</button>
     </div>
   </section>
+  -->
 
 
 

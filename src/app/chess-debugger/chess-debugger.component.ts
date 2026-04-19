@@ -74,7 +74,7 @@ export class ChessDebuggerComponent {
     if (fr === null || fc === null || tr === null || tc === null ||
         fr < 0 || fr > 7 || fc < 0 || fc > 7 ||
         tr < 0 || tr > 7 || tc < 0 || tc < 7) {
-      alert('Coordenadas inválidas (deben estar entre 0 y 7)');
+      alert('Invalid coordinates (must be between 0 and 7)');
       return;
     }
     const fromSquare = this.boardService.board()[fr][fc];
