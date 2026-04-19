@@ -7,7 +7,7 @@
   border-radius: 12px;
   font-family: 'Inter', sans-serif;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
-  max-width: 450px;
+  width: 600px;
   height: calc(100vh - 40px);
   overflow-y: auto;
   font-size: 0.9rem;
@@ -153,6 +153,20 @@ button:disabled {
   background: #2563eb;
 }
 
+.btn-undo {
+  background: transparent;
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+}
+
+.btn-undo:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.sim-row-wrap {
+  flex-wrap: wrap;
+}
+
 .history-list {
   list-style: none;
   padding: 0.5rem;
@@ -173,6 +187,21 @@ button:disabled {
 
 .history-list li:last-child {
   border-bottom: none;
+}
+
+.sim-status {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.04);
+  color: #94a3b8;
+}
+
+.sim-status.game-over {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 /* Custom Scrollbar */

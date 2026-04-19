@@ -1,9 +1,25 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameService } from '../services/game.service';
 import { BoardService } from '../services/board.service';
 import { Square } from '../models/Square';
+import { PieceFactory } from '../models/PieceFactory';
+import { Move } from '../models/Move';
+
+interface PieceSnapshot { name: string; colour: 'white' | 'black'; hasMoved: boolean; }
+interface SquareSnapshot { squareColorClass: string; piece: PieceSnapshot | null; }
+interface GameSnapshot {
+  board: SquareSnapshot[][];
+  currentTurnColour: 'white' | 'black';
+  isCheck: boolean;
+  checkAttackLine: [number, number][];
+  isGameOver: boolean;
+  gameOverReason: string;
+  halfMoveClock: number;
+  lastMove: { from: [number, number]; to: [number, number] } | null;
+  movesHistory: { from: [number, number]; to: [number, number] }[];
+}
 
 @Component({
   selector: 'app-chess-debugger',
@@ -26,6 +42,12 @@ export class ChessDebuggerComponent {
   movesInput = signal<string>('');
   simulationDelayMs = signal<number>(500);
   isSimulating = signal<boolean>(false);
+
+  // --- Random simulation ---
+  randomSimDelayMs = signal<number>(400);
+  isRandomSimulating = signal<boolean>(false);
+  snapshots = signal<GameSnapshot[]>([]);
+  canUndo = computed(() => this.snapshots().length > 0 && !this.isRandomSimulating());
 
   constructor() {
     effect(() => {
@@ -110,5 +132,140 @@ export class ChessDebuggerComponent {
 
   stopSimulation() {
     this.isSimulating.set(false);
+  }
+
+  // ---------- Snapshot helpers ----------
+
+  private saveSnapshot() {
+    const board = this.boardService.board();
+    const snap: GameSnapshot = {
+      board: board.map(row =>
+        row.map(sq => ({
+          squareColorClass: sq.squareColorClass,
+          piece: sq.piece
+            ? { name: sq.piece.name, colour: sq.piece.colour, hasMoved: sq.piece.hasMoved }
+            : null
+        }))
+      ),
+      currentTurnColour: this.gameService.currentTurnPlayer.colour as 'white' | 'black',
+      isCheck: this.gameService.isCheck,
+      checkAttackLine: this.gameService.checkAttackLine.map(c => [...c] as [number, number]),
+      isGameOver: this.gameService.isGameOver,
+      gameOverReason: this.gameService.gameOverReason,
+      halfMoveClock: this.gameService.halfMoveClock,
+      lastMove: this.boardService.lastMove
+        ? { from: [...this.boardService.lastMove.from] as [number, number], to: [...this.boardService.lastMove.to] as [number, number] }
+        : null,
+      movesHistory: this.gameService.movesHistory.map(m => ({ from: [...m.from] as [number, number], to: [...m.to] as [number, number] })),
+    };
+    this.snapshots.update(prev => [...prev, snap]);
+  }
+
+  undoLastMove() {
+    const snaps = this.snapshots();
+    if (snaps.length === 0) return;
+
+    const snap = snaps[snaps.length - 1];
+    this.snapshots.update(prev => prev.slice(0, -1));
+
+    // Rebuild board from snapshot
+    const newBoard = snap.board.map((row, r) =>
+      row.map((sq, c) => {
+        const square = new Square(sq.squareColorClass, [r, c], null);
+        if (sq.piece) {
+          const piece = PieceFactory.createPiece(sq.piece.colour, sq.piece.name);
+          piece.hasMoved = sq.piece.hasMoved;
+          square.piece = piece;
+        }
+        return square;
+      })
+    );
+    this.boardService.board.set(newBoard);
+
+    // Restore game state
+    this.gameService.isCheck = snap.isCheck;
+    this.gameService.checkAttackLine = snap.checkAttackLine;
+    this.gameService.isGameOver = snap.isGameOver;
+    this.gameService.gameOverReason = snap.gameOverReason;
+    this.gameService.halfMoveClock = snap.halfMoveClock;
+    this.gameService.selectedSquare = null;
+    this.gameService.selectedPieceValidMoves = [];
+    this.boardService.lastMove = snap.lastMove ? new Move(snap.lastMove.from, snap.lastMove.to) : null;
+    this.gameService.movesHistory = snap.movesHistory.map(m => new Move(m.from, m.to));
+
+    const [p1, p2] = this.gameService['playerService'].getPlayers();
+    this.gameService.currentTurnPlayer = snap.currentTurnColour === p1.colour ? p1 : p2;
+
+    this.boardService.resetSquaresHighlight();
+  }
+
+  // ---------- Random simulation ----------
+
+  /** Returns a random legal move for the current player as [fromSquare, toSquare], or null if none. */
+  private getRandomMove(): [import('../models/Square').Square, import('../models/Square').Square] | null {
+    const board = this.boardService.board();
+    const colour = this.gameService.currentTurnPlayer.colour;
+    const isCheck = this.gameService.isCheck;
+    const checkLine = this.gameService.checkAttackLine;
+
+    // Collect all legal moves
+    const allMoves: [import('../models/Square').Square, import('../models/Square').Square][] = [];
+
+    for (const row of board) {
+      for (const square of row) {
+        if (square.piece?.colour !== colour) continue;
+
+        const validMoves = isCheck
+          ? this.boardService.getValidMovesToDefendCheckByPiece(checkLine, square.piece)
+          : this.boardService.getValidMovesByPiece(square.piece);
+
+        for (const [r, c] of validMoves) {
+          allMoves.push([square, board[r][c]]);
+        }
+      }
+    }
+
+    if (allMoves.length === 0) return null;
+    return allMoves[Math.floor(Math.random() * allMoves.length)];
+  }
+
+  /** Execute exactly one random legal move. */
+  nextRandomMove() {
+    if (this.gameService.isGameOver) return;
+    const move = this.getRandomMove();
+    if (!move) return;
+    this.saveSnapshot();
+    const [from, to] = move;
+    this.gameService.handleSquareClick(from);
+    this.gameService.handleSquareClick(to);
+  }
+
+  /** Auto-play random moves until game over or stopped. */
+  async simulateRandomGame() {
+    if (this.isRandomSimulating()) return;
+    this.isRandomSimulating.set(true);
+
+    while (this.isRandomSimulating() && !this.gameService.isGameOver) {
+      const move = this.getRandomMove();
+      if (!move) break;
+      this.saveSnapshot();
+      const [from, to] = move;
+      this.gameService.handleSquareClick(from);
+      this.gameService.handleSquareClick(to);
+      await new Promise(res => setTimeout(res, this.randomSimDelayMs()));
+    }
+
+    this.isRandomSimulating.set(false);
+  }
+
+  stopRandomSimulation() {
+    this.isRandomSimulating.set(false);
+  }
+
+  resetRandomSimulation() {
+    this.isRandomSimulating.set(false);
+    this.snapshots.set([]);
+    this.boardService.setBoard();
+    this.gameService.startGame();
   }
 }

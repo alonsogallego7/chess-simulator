@@ -33,6 +33,28 @@
     </div>
   </section>
 
+  <section class="random-simulation">
+    <h3>Simulación Aleatoria</h3>
+    <div class="simulator-controls">
+      <div class="sim-actions-row sim-row-wrap">
+        <label>Delay (ms):
+          <input type="number" [ngModel]="randomSimDelayMs()" (ngModelChange)="randomSimDelayMs.set($event)" min="0" step="100" style="width: 80px;">
+        </label>
+        <button (click)="nextRandomMove()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Siguiente movimiento</button>
+        <button (click)="simulateRandomGame()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Simular partida</button>
+        <button (click)="stopRandomSimulation()" [disabled]="!isRandomSimulating()">Parar</button>
+        <button (click)="undoLastMove()" [disabled]="!canUndo()" class="btn-undo">← Atrás</button>
+        <button (click)="resetRandomSimulation()" class="btn-reset">Resetear</button>
+      </div>
+      @if (isRandomSimulating()) {
+        <p class="sim-status">⏳ Simulando movimientos aleatorios...</p>
+      }
+      @if (gameService.isGameOver) {
+        <p class="sim-status game-over">🏁 {{ gameService.gameOverReason }}</p>
+      }
+    </div>
+  </section>
+
   <section class="move-input">
     <h3>Execute Move</h3>
     <div class="input-grid">
