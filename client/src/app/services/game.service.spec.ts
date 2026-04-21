@@ -225,7 +225,7 @@ describe('GameService - 32 Automated Match Tests', () => {
 
   it('Game 29: Black pawn auto-promotes to Queen', () => {
     // simplified path:
-    playSequence('h2h3 a7a5 h3h4 a5a4 h4h5 a4a3 h5h6 a3b2 h6h7 b2c1'); // b2 captures c1 bishop
+    playSequence('h2h3 a7a5 h3h4 a5a4 h4h5 a4a3 h5h6 a3b2 g2g3 b2c1'); // b2 captures c1 bishop
     const c1 = parseCoordinate('c1');
     expect(boardService.board()[c1[0]][c1[1]].piece?.name).toBe('queen');
     expect(boardService.board()[c1[0]][c1[1]].piece?.colour).toBe('black');

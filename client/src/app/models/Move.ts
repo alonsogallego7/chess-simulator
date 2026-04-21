@@ -1,13 +1,11 @@
-export class Move {
+export type MoveType = 'move' | 'capture' | 'castling' | 'en-passant' | 'promotion';
+
+export interface Move {
   from: [number, number];
   to: [number, number];
-
-  constructor(from: [number, number], to: [number, number]) {
-    this.from = from;
-    this.to = to;
-  }
-
-  getAbstractMoves(position: [number, number]): [number, number][] {
-    return [];
-  }
+  color: 'white' | 'black';
+  pieceName: string;
+  moveType: MoveType;
+  capturedPieceName?: string | null;
+  promotionTo?: string | null;
 }

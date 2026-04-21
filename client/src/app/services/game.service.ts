@@ -117,7 +117,16 @@ export class GameService {
         )
       ) {
         let pieceMovedInfo = this.selectedSquare!.piece;
-        let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
+        let isPromotion = pieceMovedInfo?.name === "pawn" && (square.coordinates[0] === 0 || square.coordinates[0] === 7);
+
+        let move: Move = {
+          from: this.selectedSquare!.coordinates,
+          to: square.coordinates,
+          color: this.currentTurnPlayer.colour,
+          pieceName: pieceMovedInfo!.name,
+          moveType: isPromotion ? 'promotion' : 'move',
+          promotionTo: isPromotion ? 'queen' : null
+        };
         this.boardService.movePiece(move);
 
         this.boardService.lastMove = move;
@@ -125,7 +134,7 @@ export class GameService {
 
         if (pieceMovedInfo?.name === "pawn") {
           this.halfMoveClock = 0;
-          if (square.coordinates[0] === 0 || square.coordinates[0] === 7) {
+          if (isPromotion) {
              this.boardService.promotePawn(square, "queen");
           }
         } else {
@@ -143,17 +152,28 @@ export class GameService {
         ([row, col]) => row === square.coordinates[0] && col === square.coordinates[1]
       )
     ) {
+      let capturedName = square.piece.name;
       square.piece = null;
 
       let pieceMovedInfo = this.selectedSquare!.piece;
-      let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
+      let isPromotion = pieceMovedInfo?.name === "pawn" && (square.coordinates[0] === 0 || square.coordinates[0] === 7);
+
+      let move: Move = {
+        from: this.selectedSquare!.coordinates,
+        to: square.coordinates,
+        color: this.currentTurnPlayer.colour,
+        pieceName: pieceMovedInfo!.name,
+        moveType: isPromotion ? 'promotion' : 'capture',
+        capturedPieceName: capturedName,
+        promotionTo: isPromotion ? 'queen' : null
+      };
       this.boardService.movePiece(move);
       
       this.boardService.lastMove = move;
       this.movesHistory.push(move);
       this.halfMoveClock = 0;
 
-      if (pieceMovedInfo?.name === "pawn" && (square.coordinates[0] === 0 || square.coordinates[0] === 7)) {
+      if (isPromotion) {
         this.boardService.promotePawn(square, "queen");
       }
     }
@@ -182,14 +202,27 @@ export class GameService {
 
   handleCastling(destinationSquare: Square) {
     this.boardService.castle(destinationSquare.coordinates, this.currentTurnPlayer.colour);
-    let move = new Move(this.selectedSquare!.coordinates, destinationSquare.coordinates);
+    let move: Move = {
+      from: this.selectedSquare!.coordinates,
+      to: destinationSquare.coordinates,
+      color: this.currentTurnPlayer.colour,
+      pieceName: 'king',
+      moveType: 'castling'
+    };
     this.boardService.lastMove = move;
     this.movesHistory.push(move);
     this.halfMoveClock++;
   }
 
   handleEnPassant(square: Square) {
-    let move = new Move(this.selectedSquare!.coordinates, square.coordinates);
+    let move: Move = {
+      from: this.selectedSquare!.coordinates,
+      to: square.coordinates,
+      color: this.currentTurnPlayer.colour,
+      pieceName: 'pawn',
+      moveType: 'en-passant',
+      capturedPieceName: 'pawn'
+    };
     this.boardService.movePiece(move);
 
     let backRow = this.selectedSquare!.coordinates[0];

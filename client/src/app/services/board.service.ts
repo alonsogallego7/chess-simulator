@@ -74,14 +74,14 @@ export class BoardService {
 
         if (piece.name === "pawn") {
           if (move.colOffset === 0) {
-            if ((piece.colour == "white" && row > 3) || (piece.colour == "black" && row < 5)) {
-              if (targetSquare.piece) break;
-              validMoves.push([row, col]);
-            } else if (pawnMoves < 1) {
-              if (targetSquare.piece) break;
-              validMoves.push([row, col]);
-              pawnMoves++;
+            if (targetSquare.piece) break;
+            if (Math.abs(move.rowOffset) === 2) {
+              let intermediateRow = startRow + (move.rowOffset / 2);
+              if (this.board()[intermediateRow][col].piece) break;
+              if (piece.colour === "white" && startRow !== 6) break;
+              if (piece.colour === "black" && startRow !== 1) break;
             }
+            validMoves.push([row, col]);
           } else {
             if (targetSquare.piece && targetSquare.piece.colour !== piece.colour) {
               validMoves.push([row, col]);
