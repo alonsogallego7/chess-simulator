@@ -6,6 +6,7 @@ import { BoardService } from '../services/board.service';
 import { Square } from '../models/Square';
 import { PieceFactory } from '../models/PieceFactory';
 import { Move } from '../models/Move';
+import { HistoryService } from '../services/history.service';
 
 interface PieceSnapshot { name: string; colour: 'white' | 'black'; hasMoved: boolean; }
 interface SquareSnapshot { squareColorClass: string; piece: PieceSnapshot | null; }
@@ -17,8 +18,8 @@ interface GameSnapshot {
   isGameOver: boolean;
   gameOverReason: string;
   halfMoveClock: number;
-  lastMove: { from: [number, number]; to: [number, number] } | null;
-  movesHistory: { from: [number, number]; to: [number, number] }[];
+  lastMove: Move | null;
+  movesHistory: Move[];
 }
 
 @Component({
@@ -31,6 +32,9 @@ interface GameSnapshot {
 export class ChessDebuggerComponent {
   gameService = inject(GameService);
   boardService = inject(BoardService);
+  historyService = inject(HistoryService);
+
+  historySent = signal<boolean>(false);
 
   fromRow = signal<number | null>(null);
   fromCol = signal<number | null>(null);
@@ -89,6 +93,7 @@ export class ChessDebuggerComponent {
   resetGame() {
     this.boardService.setBoard();
     this.gameService.startGame();
+    this.historySent.set(false);
   }
 
   parseCoordinate(coord: string): [number, number] {
@@ -154,9 +159,9 @@ export class ChessDebuggerComponent {
       gameOverReason: this.gameService.gameOverReason,
       halfMoveClock: this.gameService.halfMoveClock,
       lastMove: this.boardService.lastMove
-        ? { from: [...this.boardService.lastMove.from] as [number, number], to: [...this.boardService.lastMove.to] as [number, number] }
+        ? { ...this.boardService.lastMove, from: [...this.boardService.lastMove.from] as [number, number], to: [...this.boardService.lastMove.to] as [number, number] }
         : null,
-      movesHistory: this.gameService.movesHistory.map(m => ({ from: [...m.from] as [number, number], to: [...m.to] as [number, number] })),
+      movesHistory: this.gameService.movesHistory.map(m => ({ ...m, from: [...m.from] as [number, number], to: [...m.to] as [number, number] })),
     };
     this.snapshots.update(prev => [...prev, snap]);
   }
@@ -190,8 +195,8 @@ export class ChessDebuggerComponent {
     this.gameService.halfMoveClock = snap.halfMoveClock;
     this.gameService.selectedSquare = null;
     this.gameService.selectedPieceValidMoves = [];
-    this.boardService.lastMove = snap.lastMove ? new Move(snap.lastMove.from, snap.lastMove.to) : null;
-    this.gameService.movesHistory = snap.movesHistory.map(m => new Move(m.from, m.to));
+    this.boardService.lastMove = snap.lastMove ? { ...snap.lastMove } : null;
+    this.gameService.movesHistory = snap.movesHistory.map(m => ({ ...m }));
 
     const [p1, p2] = this.gameService['playerService'].getPlayers();
     this.gameService.currentTurnPlayer = snap.currentTurnColour === p1.colour ? p1 : p2;
@@ -267,5 +272,30 @@ export class ChessDebuggerComponent {
     this.snapshots.set([]);
     this.boardService.setBoard();
     this.gameService.startGame();
+    this.historySent.set(false);
+  }
+
+  sendHistory() {
+    if (!this.gameService.isGameOver) return;
+    
+    let winner: string | null = null;
+    if (this.gameService.gameOverReason.includes('White wins')) {
+      winner = 'white';
+    } else if (this.gameService.gameOverReason.includes('Black wins')) {
+      winner = 'black';
+    }
+    
+    const isDraw = this.gameService.gameOverReason.includes('Draw');
+
+    const payload = {
+      moves: this.gameService.movesHistory,
+      winnerColor: winner,
+      isDraw: isDraw
+    };
+
+    this.historyService.sendGameHistory(payload).subscribe({
+      next: () => this.historySent.set(true),
+      error: (e) => console.error("Error sending history", e)
+    });
   }
 }

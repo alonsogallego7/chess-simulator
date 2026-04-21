@@ -85,5 +85,14 @@
         {{ i + 1 }}. [{{ move.from }}] → [{{ move.to }}]
       </li>
     </ul>
+
+    @if (gameService.isGameOver) {
+      <div style="margin-top: 1rem;">
+        <button (click)="sendHistory()" class="btn-execute">Send Game History</button>
+        @if (historySent()) {
+          <span style="color: green; margin-left: 0.5rem; font-weight: bold;">✔ Sent successfully!</span>
+        }
+      </div>
+    }
   </section>
 </div>
