@@ -1,4 +1,19 @@
 <div id="container">
+  @if (gameService.promotionPending) {
+    <div class="promotion-modal">
+      <div class="promotion-choices">
+        <h3 style="margin-bottom: 1rem; color: black; font-family: sans-serif; text-transform: uppercase; font-size: 1rem;">Promote Pawn</h3>
+        <div style="display: flex; border: 1px solid black; outline: 1px solid black;">
+          @for (piece of ['queen', 'rook', 'bishop', 'knight']; track piece; let i = $index) {
+            <div class="square" [ngClass]="i % 2 === 0 ? 'square-beige' : 'square-brown'" style="cursor: pointer; position: relative;" (click)="gameService.completePromotion(piece)">
+              <div class="promotion-hover"></div>
+              <img [src]="'assets/pieces/' + gameService.currentTurnPlayer.colour + '_' + piece + '.svg.png'"/>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
   @if (gameService.isGameOver) {
     <div class="game-over-banner">
       <h2>{{ gameService.gameOverReason }}</h2>
