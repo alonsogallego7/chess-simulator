@@ -5,6 +5,14 @@
     </div>
   }
   <div id="complete-board">
+    <div class="captured-grid black-captured">
+      @for (piece of capturedByBlack; track $index) {
+        <div class="captured-piece-container">
+          <img [src]="'assets/pieces/white_' + piece + '.svg.png'" class="captured-piece" />
+        </div>
+      }
+    </div>
+
     <div id="board">
       @for (row of board; track row) {
         @for (square of row; track square) {
@@ -19,6 +27,14 @@
             }
           </div>
         }
+      }
+    </div>
+
+    <div class="captured-grid white-captured">
+      @for (piece of capturedByWhite; track $index) {
+        <div class="captured-piece-container">
+          <img [src]="'assets/pieces/black_' + piece + '.svg.png'" class="captured-piece" />
+        </div>
       }
     </div>
   </div>

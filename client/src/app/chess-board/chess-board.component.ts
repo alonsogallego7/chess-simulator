@@ -25,4 +25,16 @@ export class ChessBoardComponent implements OnInit{
   get board() {
     return this.boardService.board();
   }
+
+  get capturedByWhite() {
+    return this.gameService.movesHistory
+      .filter(m => m.color === 'white' && m.capturedPieceName)
+      .map(m => m.capturedPieceName!);
+  }
+
+  get capturedByBlack() {
+    return this.gameService.movesHistory
+      .filter(m => m.color === 'black' && m.capturedPieceName)
+      .map(m => m.capturedPieceName!);
+  }
 }
