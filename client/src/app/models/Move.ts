@@ -8,4 +8,5 @@ export interface Move {
   moveType: MoveType;
   capturedPieceName?: string | null;
   promotionTo?: string | null;
+  colorMoveNumber?: number;
 }

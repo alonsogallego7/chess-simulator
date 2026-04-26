@@ -27,6 +27,10 @@ export class GameService {
   gameOverReason: string = '';
   halfMoveClock: number = 0;
 
+  promotionPending: boolean = false;
+  promotionSquare: Square | null = null;
+  promotionMove: Move | null = null;
+
   castlingKeyPositionsMap = new Map<[number, number], string>([
     [[7,6], "white"],
     [[7,2], "white"],
@@ -45,11 +49,16 @@ export class GameService {
     this.halfMoveClock = 0;
     this.isCheck = false;
     this.checkAttackLine = [];
+    this.promotionPending = false;
+    this.promotionSquare = null;
+    this.promotionMove = null;
 
     this.currentTurnPlayer = this.playerService.getPlayerByColour("white");
   }
 
   nextTurn() {
+    if (this.promotionPending) return;
+
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
 
@@ -60,7 +69,7 @@ export class GameService {
   }
 
   handleSquareClick(square: Square) {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.promotionPending) return;
 
     this.boardService.resetSquaresHighlight();
 
@@ -100,13 +109,34 @@ export class GameService {
         }
       }
 
-      this.selectedSquare = square;
-      this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
+      if (this.promotionPending) {
+        return;
+      }
 
-      this.handleCheck();
-
-      this.nextTurn();
+      this.finishTurn(square);
     }
+  }
+
+  finishTurn(square: Square) {
+    this.selectedSquare = square;
+    this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
+
+    this.handleCheck();
+    this.nextTurn();
+  }
+
+  completePromotion(pieceName: string) {
+    if (!this.promotionPending || !this.promotionSquare || !this.promotionMove) return;
+
+    this.boardService.promotePawn(this.promotionSquare, pieceName);
+    this.promotionMove.promotionTo = pieceName;
+
+    this.promotionPending = false;
+    let finishSq = this.promotionSquare;
+    this.promotionSquare = null;
+    this.promotionMove = null;
+
+    this.finishTurn(finishSq);
   }
 
   handlePieceMove(square: Square) {
@@ -130,12 +160,15 @@ export class GameService {
         this.boardService.movePiece(move);
 
         this.boardService.lastMove = move;
+        move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
         this.movesHistory.push(move);
 
         if (pieceMovedInfo?.name === "pawn") {
           this.halfMoveClock = 0;
           if (isPromotion) {
-             this.boardService.promotePawn(square, "queen");
+            this.promotionPending = true;
+            this.promotionSquare = square;
+            this.promotionMove = move;
           }
         } else {
           this.halfMoveClock++;
@@ -170,11 +203,14 @@ export class GameService {
       this.boardService.movePiece(move);
       
       this.boardService.lastMove = move;
+      move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
       this.movesHistory.push(move);
       this.halfMoveClock = 0;
 
       if (isPromotion) {
-        this.boardService.promotePawn(square, "queen");
+        this.promotionPending = true;
+        this.promotionSquare = square;
+        this.promotionMove = move;
       }
     }
   }
@@ -210,6 +246,7 @@ export class GameService {
       moveType: 'castling'
     };
     this.boardService.lastMove = move;
+    move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
     this.movesHistory.push(move);
     this.halfMoveClock++;
   }
@@ -230,6 +267,7 @@ export class GameService {
     this.boardService.board()[backRow][targCol].piece = null;
 
     this.boardService.lastMove = move;
+    move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
     this.movesHistory.push(move);
     this.halfMoveClock = 0;
   }
