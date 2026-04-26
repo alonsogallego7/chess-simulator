@@ -1,17 +1,18 @@
 .app-container {
   display: flex;
-  gap: 2rem;
-  padding: 2rem;
   background: white;
   min-height: 100vh;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 app-chess-board {
-  flex-shrink: 0;
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 app-chess-debugger {
-  flex-grow: 1;
-  max-width: 450px;
+  flex-shrink: 0;
+  width: 450px;
 }

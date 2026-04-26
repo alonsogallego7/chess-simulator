@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 .debugger-container {
-  background: linear-gradient(145deg, #121212, #1a1c20);
-  color: #e2e8f0;
+  background: #181818;
+  color: #eeeeee;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 0;
   font-family: 'Inter', sans-serif;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
-  width: 600px;
-  height: calc(100vh - 40px);
+  width: 100%;
+  height: 100vh;
   overflow-y: auto;
   font-size: 0.9rem;
-  border: 1px solid #2d3748;
+  border-left: 2px solid #333333;
+  box-sizing: border-box;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 2px solid #333333;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
 }
@@ -29,7 +29,7 @@ h2 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #f8fafc;
+  color: #ffffff;
 }
 
 h3 {
@@ -37,18 +37,16 @@ h3 {
   margin-bottom: 1rem;
   font-size: 1rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: #cccccc;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 section {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  background: #242424;
+  border-radius: 0;
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
 .state-grid {
@@ -58,15 +56,15 @@ section {
 }
 
 .state-item {
-  background: rgba(0,0,0,0.2);
+  background: #181818;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 0;
+  border: 1px solid #333333;
   font-size: 0.85rem;
 }
 
 .state-item strong {
-  color: #cbd5e1;
+  color: #dddddd;
   display: block;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -79,7 +77,6 @@ section {
   gap: 0.75rem;
 }
 
-/* Flex row specifically for side-by-side elements */
 .coord-group, .sim-actions-row {
   display: flex;
   align-items: center;
@@ -87,20 +84,18 @@ section {
 }
 
 input[type="number"], textarea {
-  background: #0f172a;
-  border: 1px solid #334155;
-  color: #f8fafc;
+  background: #181818;
+  border: 1px solid #333333;
+  color: #ffffff;
   padding: 0.5rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-family: 'Consolas', monospace;
   font-size: 0.85rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
 }
 
 input[type="number"]:focus, textarea:focus {
-  border-color: #64748b;
-  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.2);
+  border-color: #555555;
 }
 
 textarea {
@@ -113,54 +108,57 @@ textarea {
 button {
   cursor: pointer;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0;
+  border: 1px solid #444444;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 0.85rem;
-  transition: all 0.2s ease;
-  background: #1e293b;
-  color: #e2e8f0;
+  background: #333333;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 button:hover:not(:disabled) {
-  background: #334155;
-  transform: translateY(-1px);
+  background: #444444;
 }
 
 button:disabled {
-  opacity: 0.5;
+  background: #181818;
+  color: #555555;
+  border-color: #242424;
   cursor: not-allowed;
+  opacity: 1;
 }
 
 .btn-reset { 
-  background: transparent;
-  border: 1px solid #ef4444;
-  color: #ef4444;
+  background: #7f1d1d;
+  border: 1px solid #991b1b;
+  color: #ffffff;
 }
 
-.btn-reset:hover {
-  background: rgba(239, 68, 68, 0.1);
+.btn-reset:hover:not(:disabled) {
+  background: #991b1b;
 }
 
 .btn-execute { 
-  background: #3b82f6;
-  border-color: #2563eb;
+  background: rgb(163, 91, 55); /* same brown as chess board */
+  border-color: #7e4325;
   color: white; 
 }
 
 .btn-execute:hover:not(:disabled) {
-  background: #2563eb;
+  background: #7e4325;
 }
 
 .btn-undo {
-  background: transparent;
-  border: 1px solid #f59e0b;
-  color: #f59e0b;
+  background: #333333;
+  border: 1px solid #444444;
+  color: #ffffff;
 }
 
 .btn-undo:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.1);
+  background: #444444;
 }
 
 .sim-row-wrap {
@@ -172,17 +170,18 @@ button:disabled {
   padding: 0.5rem;
   max-height: 200px;
   overflow-y: auto;
-  background: rgba(0,0,0,0.2);
-  border-radius: 6px;
+  background: #181818;
+  border-radius: 0;
   margin: 0;
+  border: 1px solid #333333;
 }
 
 .history-list li {
   padding: 0.4rem 0.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid #333333;
   font-family: 'Consolas', monospace;
   font-size: 0.85rem;
-  color: #cbd5e1;
+  color: #cccccc;
 }
 
 .history-list li:last-child {
@@ -192,16 +191,17 @@ button:disabled {
 .sim-status {
   margin: 0;
   padding: 0.4rem 0.6rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 0.85rem;
-  background: rgba(255,255,255,0.04);
-  color: #94a3b8;
+  background: #333333;
+  color: #ffffff;
+  border: 1px solid #444444;
 }
 
 .sim-status.game-over {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: #7f1d1d;
+  color: #ffffff;
+  border: 1px solid #991b1b;
 }
 
 /* Custom Scrollbar */
@@ -209,12 +209,12 @@ button:disabled {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.1);
+  background: #181818;
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 3px;
+  background: #444444;
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #555555;
 }
