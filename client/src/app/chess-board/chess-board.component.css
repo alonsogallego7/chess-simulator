@@ -30,12 +30,12 @@
 .captured-piece-container {
   width: 40px;
   height: 40px;
-  background-color: rgba(255, 255, 255, 0.05); /* very subtle background to blend in */
-  border-radius: 4px;
+  background-color: #242424; 
+  border-radius: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.1); /* neat border */
+  border: 1px solid #111;
 }
 
 .captured-piece {
@@ -100,14 +100,16 @@
 .game-over-banner {
   position: absolute;
   top: 4vh;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 1.5rem 3rem;
-  border-radius: 12px;
+  background: white;
+  color: black;
+  padding: 1rem 2rem;
+  border-radius: 0;
+  border: 4px solid black;
   z-index: 100;
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  font-family: sans-serif;
+  box-shadow: 8px 8px 0px rgba(0,0,0,1);
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
 }
 
 .promotion-modal {

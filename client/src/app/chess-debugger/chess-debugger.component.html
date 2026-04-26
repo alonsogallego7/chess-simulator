@@ -49,10 +49,10 @@
         <button (click)="resetRandomSimulation()" class="btn-reset">Reset</button>
       </div>
       @if (isRandomSimulating()) {
-        <p class="sim-status">⏳ Simulating random moves...</p>
+        <p class="sim-status">Simulating random moves...</p>
       }
       @if (gameService.isGameOver) {
-        <p class="sim-status game-over">🏁 {{ gameService.gameOverReason }}</p>
+        <p class="sim-status game-over">{{ gameService.gameOverReason }}</p>
       }
     </div>
   </section>
@@ -90,7 +90,7 @@
       <div style="margin-top: 1rem;">
         <button (click)="sendHistory()" class="btn-execute">Send Game History</button>
         @if (historySent()) {
-          <span style="color: green; margin-left: 0.5rem; font-weight: bold;">✔ Sent successfully!</span>
+          <span style="color: green; margin-left: 0.5rem; font-weight: bold;">Sent successfully!</span>
         }
       </div>
     }
