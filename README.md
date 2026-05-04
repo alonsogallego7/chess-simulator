@@ -5,6 +5,13 @@ Website: https://chess-simulator-gilt.vercel.app
 ## Overview
 A high-performance web-based chess simulator built with Angular 19. This project features a robust implementation of FIDE chess rules, optimized with a modern reactive architecture using Angular Signals and a decoupled service-based logic.
 
+<div align="center">
+  <img src="docs/chess-1.png" width="800" alt="Chess Simulator">
+  <br/>
+  <img src="docs/chess-2.png" width="400" alt="Chess Gameplay">
+  <img src="docs/chess-3.png" width="400" alt="Chess Features">
+</div>
+
 ## Logic and Validation
 The simulator is engineered for reliability and precision, featuring a comprehensive logic engine built entirely in TypeScript:
 - **Service-Oriented Architecture:** Core game mechanics are decoupled from the UI, managed by specialized services for Board state, Game flow, and Player management.
