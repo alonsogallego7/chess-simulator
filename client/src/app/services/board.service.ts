@@ -186,11 +186,7 @@ export class BoardService {
     let validMovesToDefendCheck: [number, number][] = [];
     for (let move of pieceValidMoves) {
       if (piece.name === "king") {
-          if (!checkAttackLine.some(
-            ([r, c]) => r === move[0] && c === move[1])
-          ) {
-              validMovesToDefendCheck.push([move[0], move[1]]);
-          }
+          validMovesToDefendCheck.push([move[0], move[1]]);
       } else {
           if (checkAttackLine.some(
             ([r, c]) => r === move[0] && c === move[1])
