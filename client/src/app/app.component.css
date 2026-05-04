@@ -1,7 +1,8 @@
 .app-container {
   display: flex;
   background: white;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   justify-content: flex-end;
 }
 
@@ -10,9 +11,32 @@ app-chess-board {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 0;
 }
 
 app-chess-debugger {
   flex-shrink: 0;
   width: 450px;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+
+  app-chess-board {
+    flex-grow: 0;
+    height: 70vh;
+    width: 100%;
+  }
+
+  app-chess-debugger {
+    width: 100%;
+    height: 30vh;
+  }
 }

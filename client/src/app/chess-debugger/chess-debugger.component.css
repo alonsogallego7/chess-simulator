@@ -7,8 +7,9 @@
   border-radius: 0;
   font-family: 'Inter', sans-serif;
   width: 100%;
-  height: 100vh;
-  overflow-y: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   font-size: 0.9rem;
   border-left: 2px solid #333333;
   box-sizing: border-box;
@@ -47,6 +48,15 @@ section {
   border-radius: 0;
   padding: 1rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+section.history {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
 }
 
 .state-grid {
@@ -168,7 +178,7 @@ button:disabled {
 .history-list {
   list-style: none;
   padding: 0.5rem;
-  max-height: 200px;
+  flex: 1;
   overflow-y: auto;
   background: #181818;
   border-radius: 0;
@@ -217,4 +227,35 @@ button:disabled {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555555;
+}
+
+@media (max-width: 768px) {
+  .simulation-input, .random-simulation {
+    display: none;
+  }
+  
+  .debugger-container {
+    padding: 0.5rem;
+    border-left: none;
+    border-top: 2px solid #333333;
+    overflow: hidden;
+  }
+
+  header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1rem;
+  }
+
+  section {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .history-list {
+    /* flex: 1 from global style will handle it */
+  }
 }

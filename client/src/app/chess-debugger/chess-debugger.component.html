@@ -1,8 +1,9 @@
 <div class="debugger-container">
   <header>
     <h2>Chess Engine Debugger</h2>
-    <div class="actions">
-      <button (click)="resetGame()" class="btn-reset">Reset Game</button>
+    <div class="actions" style="display: flex; gap: 0.5rem;">
+      <button (click)="undoLastMove()" [disabled]="!canUndo()" class="btn-undo">← Undo</button>
+      <button (click)="resetGame()" class="btn-reset">Reset</button>
     </div>
   </header>
 
@@ -45,7 +46,6 @@
         <button (click)="nextRandomMove()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Next move</button>
         <button (click)="simulateRandomGame()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Simulate game</button>
         <button (click)="stopRandomSimulation()" [disabled]="!isRandomSimulating()">Stop</button>
-        <button (click)="undoLastMove()" [disabled]="!canUndo()" class="btn-undo">← Undo</button>
         <button (click)="resetRandomSimulation()" class="btn-reset">Reset</button>
       </div>
       @if (isRandomSimulating()) {
