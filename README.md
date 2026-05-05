@@ -33,15 +33,3 @@ The simulator is engineered for reliability and precision, featuring a comprehen
 - **Frontend Framework:** Angular 19+ (Signals, Standalone Components, RxJS)
 - **Programming Language:** TypeScript
 
-## Project Structure
-- `/client/src/app/services`: Orchestration of game logic and board state.
-- `/client/src/app/models`: Object-oriented definitions for Pieces, Squares, and Moves.
-- `/client/src/app/chess-board`: Reactive UI component for the interactive board.
-- `/server`: Python Flask backend for advanced simulation logging and AI integration.
-
-## Local Installation and Execution
-1. Clone the repository and navigate to the project directory.
-2. Navigate to the client folder: `cd client`
-3. Install dependencies: `npm install`
-4. Launch the development server: `npm start`
-5. The application will be available on `http://localhost:4200`.
