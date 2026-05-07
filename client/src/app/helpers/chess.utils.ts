@@ -1,6 +1,6 @@
 export function algebraicToIndex(pos: string): [number, number] {
   const col = pos.charCodeAt(0) - 'a'.charCodeAt(0);
-  const row = parseInt(pos[1], 10) - 1;
+  const row = 8 - parseInt(pos[1], 10);
   return [row, col];
 }
 

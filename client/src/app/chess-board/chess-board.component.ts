@@ -17,8 +17,10 @@ export class ChessBoardComponent implements OnInit{
 
   ngOnInit(): void {
     this.boardService.setBoard();
-    this.playerService.setPlayers("Alonso", "Luis");
+    this.playerService.setPlayers("Alonso", "Stockfish");
 
+    this.gameService.stockfishEnabled = true;
+    this.gameService.stockfishColour = 'black';
     this.gameService.startGame();
   }
 

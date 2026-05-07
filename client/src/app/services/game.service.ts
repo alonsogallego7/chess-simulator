@@ -1,10 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { PlayerService } from './player.service';
 import { BoardService } from './board.service';
+import { StockfishService } from './stockfish.service';
 import { Player } from '../models/Player';
 import { Square } from '../models/Square';
 import { Piece } from '../models/Piece';
 import { Move } from '../models/Move';
+import { algebraicToIndex } from '../helpers/chess.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +14,7 @@ import { Move } from '../models/Move';
 export class GameService {
   boardService = inject(BoardService);
   playerService = inject(PlayerService);
+  stockfishService = inject(StockfishService);
 
   currentTurnPlayer: Player;
 
@@ -30,6 +33,13 @@ export class GameService {
   promotionPending: boolean = false;
   promotionSquare: Square | null = null;
   promotionMove: Move | null = null;
+
+  // Stockfish AI
+  stockfishEnabled: boolean = false;
+  stockfishColour: 'white' | 'black' = 'black';
+  stockfishDepth: number = 12;
+  stockfishThinking: boolean = false;
+  stockfishLastEval: number | null = null;
 
   castlingKeyPositionsMap = new Map<[number, number], string>([
     [[7,6], "white"],
@@ -52,8 +62,15 @@ export class GameService {
     this.promotionPending = false;
     this.promotionSquare = null;
     this.promotionMove = null;
+    this.stockfishThinking = false;
+    this.stockfishLastEval = null;
 
     this.currentTurnPlayer = this.playerService.getPlayerByColour("white");
+
+    // If Stockfish plays white, trigger immediately
+    if (this.stockfishEnabled && this.stockfishColour === 'white') {
+      this.triggerStockfishMove();
+    }
   }
 
   nextTurn() {
@@ -66,10 +83,22 @@ export class GameService {
     this.currentTurnPlayer = this.currentTurnPlayer === player1 ? player2 : player1;
 
     this.checkEndgameConditions();
+
+    // Trigger Stockfish if it's the AI's turn
+    if (
+      this.stockfishEnabled &&
+      !this.isGameOver &&
+      this.currentTurnPlayer.colour === this.stockfishColour
+    ) {
+      this.triggerStockfishMove();
+    }
   }
 
   handleSquareClick(square: Square) {
-    if (this.isGameOver || this.promotionPending) return;
+    if (this.isGameOver || this.promotionPending || this.stockfishThinking) return;
+
+    // Block human clicks when it's Stockfish's turn
+    if (this.stockfishEnabled && this.currentTurnPlayer.colour === this.stockfishColour) return;
 
     this.boardService.resetSquaresHighlight();
 
@@ -328,5 +357,75 @@ export class GameService {
       }
     }
     return false;
+  }
+
+  // ─── Stockfish AI ───────────────────────────────────────
+
+  /**
+   * Queries the Stockfish API and executes the best move on the board.
+   */
+  async triggerStockfishMove() {
+    if (this.isGameOver || this.stockfishThinking) return;
+
+    this.stockfishThinking = true;
+
+    try {
+      const fullMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
+      const fen = this.boardService.generateFEN(
+        this.currentTurnPlayer.colour as 'white' | 'black',
+        this.halfMoveClock,
+        fullMoveNumber
+      );
+
+      const response = await this.stockfishService.getBestMove(fen, this.stockfishDepth);
+
+      if (!response || !response.move) {
+        console.error('Stockfish API returned no move', response);
+        this.stockfishThinking = false;
+        return;
+      }
+
+      this.stockfishLastEval = response.eval;
+
+      // Parse move string: "e2e4" or "b7b8q" (promotion)
+      const moveStr = response.move;
+      const fromAlg = moveStr.substring(0, 2);
+      const toAlg = moveStr.substring(2, 4);
+      const promotionChar = moveStr.length > 4 ? moveStr[4] : null;
+
+      const [fromRow, fromCol] = algebraicToIndex(fromAlg);
+      const [toRow, toCol] = algebraicToIndex(toAlg);
+
+      const fromSquare = this.boardService.board()[fromRow][fromCol];
+      const toSquare = this.boardService.board()[toRow][toCol];
+
+      if (!fromSquare?.piece) {
+        console.error(`Stockfish move invalid: no piece at ${fromAlg} [${fromRow},${fromCol}]`);
+        this.stockfishThinking = false;
+        return;
+      }
+
+      // Add a small delay so the user can see the move
+      await new Promise(resolve => setTimeout(resolve, 400));
+
+      // Programmatically select and move
+      this.stockfishThinking = false; // Temporarily disable to allow handleSquareClick
+      const savedEnabled = this.stockfishEnabled;
+      this.stockfishEnabled = false; // Temporarily disable to allow the click
+
+      this.handleSquareClick(fromSquare);
+      this.handleSquareClick(toSquare);
+
+      // Handle promotion from Stockfish
+      if (promotionChar && this.promotionPending) {
+        const promoMap: Record<string, string> = { 'q': 'queen', 'r': 'rook', 'b': 'bishop', 'n': 'knight' };
+        this.completePromotion(promoMap[promotionChar] || 'queen');
+      }
+
+      this.stockfishEnabled = savedEnabled;
+    } catch (error) {
+      console.error('Stockfish API error:', error);
+      this.stockfishThinking = false;
+    }
   }
 }

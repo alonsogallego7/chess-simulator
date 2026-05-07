@@ -7,6 +7,7 @@ import { Square } from '../models/Square';
 import { PieceFactory } from '../models/PieceFactory';
 import { Move } from '../models/Move';
 import { HistoryService } from '../services/history.service';
+import { algebraicToIndex } from '../helpers/chess.utils';
 
 interface PieceSnapshot { name: string; colour: 'white' | 'black'; hasMoved: boolean; }
 interface SquareSnapshot { squareColorClass: string; piece: PieceSnapshot | null; }
@@ -91,15 +92,23 @@ export class ChessDebuggerComponent {
   }
 
   resetGame() {
+    const wasEnabled = this.gameService.stockfishEnabled;
+    const colour = this.gameService.stockfishColour;
+    const depth = this.gameService.stockfishDepth;
+    
     this.boardService.setBoard();
+    this.gameService.stockfishEnabled = wasEnabled;
+    this.gameService.stockfishColour = colour;
+    this.gameService.stockfishDepth = depth;
     this.gameService.startGame();
     this.historySent.set(false);
   }
 
-  parseCoordinate(coord: string): [number, number] {
-    const col = coord.charCodeAt(0) - 97; // 'a' is 97
-    const row = 8 - parseInt(coord[1], 10);
-    return [row, col];
+  toggleStockfish(enabled: boolean) {
+    this.gameService.stockfishEnabled = enabled;
+    if (enabled && this.gameService.currentTurnPlayer.colour === this.gameService.stockfishColour && !this.gameService.isGameOver) {
+      this.gameService.triggerStockfishMove();
+    }
   }
 
   async simulateMoves() {
@@ -116,8 +125,8 @@ export class ChessDebuggerComponent {
     for (const moveStr of movesList) {
       if (!this.isSimulating()) break; // Stop Simulation early
       
-      const [fr, fc] = this.parseCoordinate(moveStr.substring(0, 2));
-      const [tr, tc] = this.parseCoordinate(moveStr.substring(2, 4));
+      const [fr, fc] = algebraicToIndex(moveStr.substring(0, 2));
+      const [tr, tc] = algebraicToIndex(moveStr.substring(2, 4));
       
       const fromSquare = this.boardService.board()[fr][fc];
       const toSquare = this.boardService.board()[tr][tc];
@@ -270,7 +279,15 @@ export class ChessDebuggerComponent {
   resetRandomSimulation() {
     this.isRandomSimulating.set(false);
     this.snapshots.set([]);
+    
+    const wasEnabled = this.gameService.stockfishEnabled;
+    const colour = this.gameService.stockfishColour;
+    const depth = this.gameService.stockfishDepth;
+    
     this.boardService.setBoard();
+    this.gameService.stockfishEnabled = wasEnabled;
+    this.gameService.stockfishColour = colour;
+    this.gameService.stockfishDepth = depth;
     this.gameService.startGame();
     this.historySent.set(false);
   }

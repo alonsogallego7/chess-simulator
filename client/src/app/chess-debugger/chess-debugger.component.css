@@ -230,7 +230,7 @@ button:disabled {
 }
 
 @media (max-width: 768px) {
-  .simulation-input, .random-simulation {
+  .simulation-input, .random-simulation, section.history {
     display: none;
   }
   
@@ -239,6 +239,7 @@ button:disabled {
     border-left: none;
     border-top: 2px solid #333333;
     overflow: hidden;
+    height: auto;
   }
 
   header {
@@ -259,3 +260,108 @@ button:disabled {
     /* flex: 1 from global style will handle it */
   }
 }
+
+/* Stockfish AI Controls */
+
+.stockfish-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stockfish-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stockfish-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.stockfish-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: rgb(163, 91, 55);
+  cursor: pointer;
+}
+
+.stockfish-controls select {
+  background: #181818;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 0.35rem 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+  border-radius: 0;
+}
+
+.stockfish-controls select:focus {
+  border-color: #555;
+}
+
+.stockfish-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.thinking-badge,
+.waiting-badge,
+.your-turn-badge {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #444;
+}
+
+.thinking-badge {
+  background: #7f6608;
+  color: #fff;
+  border-color: #a58308;
+  animation: pulse-thinking 1.5s ease-in-out infinite;
+}
+
+.waiting-badge {
+  background: #333;
+  color: #aaa;
+}
+
+.your-turn-badge {
+  background: #1a472a;
+  color: #6ee7b7;
+  border-color: #16a34a;
+}
+
+.eval-badge {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  font-family: 'Consolas', monospace;
+  font-weight: 600;
+  border: 1px solid #444;
+  background: #333;
+  color: #ccc;
+}
+
+.eval-badge.eval-positive {
+  color: #86efac;
+  border-color: #16a34a;
+}
+
+.eval-badge.eval-negative {
+  color: #fca5a5;
+  border-color: #dc2626;
+}
+
+@keyframes pulse-thinking {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+

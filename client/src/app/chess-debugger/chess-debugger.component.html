@@ -7,6 +7,29 @@
     </div>
   </header>
 
+  <section class="stockfish-section">
+    <h3>Stockfish AI</h3>
+    <div class="stockfish-controls">
+      <div class="stockfish-row">
+        <label class="stockfish-toggle">
+          <input type="checkbox" [ngModel]="gameService.stockfishEnabled" (ngModelChange)="toggleStockfish($event)">
+          <span>Enabled</span>
+        </label>
+        <label>Depth:
+          <select [ngModel]="gameService.stockfishDepth" (ngModelChange)="gameService.stockfishDepth = +$event">
+            <option [value]="6">6 (~1500 ELO)</option>
+            <option [value]="8">8 (~1800 ELO)</option>
+            <option [value]="10">10 (~2100 ELO)</option>
+            <option [value]="12">12 (~2350 ELO)</option>
+            <option [value]="14">14 (~2500 ELO)</option>
+            <option [value]="16">16 (~2650 ELO)</option>
+            <option [value]="18">18 (~2750 ELO)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </section>
+
 <!-- Hidden from user view but exists in source
   <section class="state-summary">
     <h3>Game State</h3>

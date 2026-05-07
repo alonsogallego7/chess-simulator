@@ -387,5 +387,66 @@ export class BoardService {
       square.piece.hasMoved = true;
     }
   }
+
+  /**
+   * Generates FEN notation from the current board state.
+   * Required by the Stockfish API to evaluate positions.
+   */
+  generateFEN(
+    currentTurnColour: 'white' | 'black',
+    halfMoveClock: number,
+    fullMoveNumber: number
+  ): string {
+    const pieceToFEN: Record<string, string> = {
+      'pawn': 'p', 'rook': 'r', 'knight': 'n',
+      'bishop': 'b', 'queen': 'q', 'king': 'k'
+    };
+
+    // 1. Piece placement
+    let rows: string[] = [];
+    for (let row = 0; row < 8; row++) {
+      let fenRow = '';
+      let emptyCount = 0;
+      for (let col = 0; col < 8; col++) {
+        const piece = this.board()[row][col].piece;
+        if (piece) {
+          if (emptyCount > 0) { fenRow += emptyCount; emptyCount = 0; }
+          const letter = pieceToFEN[piece.name] || '?';
+          fenRow += piece.colour === 'white' ? letter.toUpperCase() : letter;
+        } else {
+          emptyCount++;
+        }
+      }
+      if (emptyCount > 0) fenRow += emptyCount;
+      rows.push(fenRow);
+    }
+    const placement = rows.join('/');
+
+    // 2. Active color
+    const activeColor = currentTurnColour === 'white' ? 'w' : 'b';
+
+    // 3. Castling availability
+    let castling = '';
+    const whiteKing = this.board()[7][4]?.piece;
+    if (whiteKing?.name === 'king' && !whiteKing.hasMoved) {
+      const whiteRookKS = this.board()[7][7]?.piece;
+      if (whiteRookKS?.name === 'rook' && !whiteRookKS.hasMoved) castling += 'K';
+      const whiteRookQS = this.board()[7][0]?.piece;
+      if (whiteRookQS?.name === 'rook' && !whiteRookQS.hasMoved) castling += 'Q';
+    }
+    const blackKing = this.board()[0][4]?.piece;
+    if (blackKing?.name === 'king' && !blackKing.hasMoved) {
+      const blackRookKS = this.board()[0][7]?.piece;
+      if (blackRookKS?.name === 'rook' && !blackRookKS.hasMoved) castling += 'k';
+      const blackRookQS = this.board()[0][0]?.piece;
+      if (blackRookQS?.name === 'rook' && !blackRookQS.hasMoved) castling += 'q';
+    }
+    if (!castling) castling = '-';
+
+    // 4. En passant target square
+    // Note: chess-api.com rejects some valid en passant FEN positions,
+    // so we always use '-'. Stockfish still computes correctly.
+    return `${placement} ${activeColor} ${castling} - ${halfMoveClock} ${fullMoveNumber}`;
+  }
 }
 
