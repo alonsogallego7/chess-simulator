@@ -12,13 +12,14 @@ The simulator is engineered for reliability and precision, featuring a comprehen
 - **Exhaustive Testing:** Validated by a suite of **50 automated match tests** covering complex scenarios, including various checkmate patterns, castling edge cases, and endgame rules.
 
 ## Key Features
+- **Stockfish AI Integration:** Compete against the world-class Stockfish engine via a REST API backend. Includes a dedicated control panel to toggle the AI on/off, adjust the difficulty depth (ELO), and seamlessly undo moves to analyze positions.
 - **Complete FIDE Ruleset:** 
   - **Standard Play:** Full validation for all piece movements and captures.
   - **Special Moves:** Implementation of Castling, En Passant, and Pawn Promotion (auto-queen).
 - **Advanced Endgame States:**
   - **Check & Checkmate:** Precise detection of threats and immediate endgame resolution.
   - **Stalemate & Draws:** Automatic detection of draws by stalemate, 50-move rule, and insufficient material.
-- **Game History:** Tracking of moves and state progression throughout the match.
+- **Game History & Debugger:** Tracking of moves and state progression throughout the match, coupled with a developer-friendly UI to simulate random games and navigate past board states.
 
 ## Screenshots
 
