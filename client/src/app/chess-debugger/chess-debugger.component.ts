@@ -52,9 +52,12 @@ export class ChessDebuggerComponent {
   randomSimDelayMs = signal<number>(400);
   isRandomSimulating = signal<boolean>(false);
   snapshots = signal<GameSnapshot[]>([]);
-  canUndo = computed(() => this.snapshots().length > 0 && !this.isRandomSimulating());
+  canUndo = computed(() => this.snapshots().length > 0 && !this.isRandomSimulating() && !this.gameService.stockfishThinking);
 
   constructor() {
+    // Register snapshot saving for undo support on every move
+    this.gameService.onBeforeMove = () => this.saveSnapshot();
+
     effect(() => {
       // Clear previous debug highlights
       this.boardService.clearDebugHighlights();
@@ -179,8 +182,15 @@ export class ChessDebuggerComponent {
     const snaps = this.snapshots();
     if (snaps.length === 0) return;
 
-    const snap = snaps[snaps.length - 1];
-    this.snapshots.update(prev => prev.slice(0, -1));
+    // When playing against Stockfish, undo 2 moves (AI + human) to return to human's turn
+    const undoCount = (this.gameService.stockfishEnabled && snaps.length >= 2) ? 2 : 1;
+
+    const snap = snaps[snaps.length - undoCount];
+    this.snapshots.update(prev => prev.slice(0, -undoCount));
+
+    // Temporarily disable Stockfish to prevent it from triggering during restore
+    const savedEnabled = this.gameService.stockfishEnabled;
+    this.gameService.stockfishEnabled = false;
 
     // Rebuild board from snapshot
     const newBoard = snap.board.map((row, r) =>
@@ -211,6 +221,9 @@ export class ChessDebuggerComponent {
     this.gameService.currentTurnPlayer = snap.currentTurnColour === p1.colour ? p1 : p2;
 
     this.boardService.resetSquaresHighlight();
+
+    // Re-enable Stockfish after state is fully restored
+    this.gameService.stockfishEnabled = savedEnabled;
   }
 
   // ---------- Random simulation ----------

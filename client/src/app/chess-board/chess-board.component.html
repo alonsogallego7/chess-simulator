@@ -28,7 +28,10 @@
       }
     </div>
 
-    <div id="board">
+    <div id="board" style="position: relative;">
+      @if (gameService.stockfishThinking) {
+        <div class="board-thinking-spinner"></div>
+      }
       @for (row of board; track row) {
         @for (square of row; track square) {
           <div (click)="gameService.handleSquareClick(square)" [ngClass]="[

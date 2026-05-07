@@ -41,6 +41,9 @@ export class GameService {
   stockfishThinking: boolean = false;
   stockfishLastEval: number | null = null;
 
+  // Hook for external components to save state before a move executes
+  onBeforeMove: (() => void) | null = null;
+
   castlingKeyPositionsMap = new Map<[number, number], string>([
     [[7,6], "white"],
     [[7,2], "white"],
@@ -124,6 +127,9 @@ export class GameService {
         c === square.coordinates[1]
       )
     ) {
+      // Save snapshot before executing the move
+      this.onBeforeMove?.();
+
       // square is the destination square in this case
       if (square.piece) {
         this.handlePieceCapture(square);
@@ -143,6 +149,10 @@ export class GameService {
       }
 
       this.finishTurn(square);
+    } else {
+      // If the user clicks on an invalid square, deselect the piece
+      this.selectedSquare = null;
+      this.selectedPieceValidMoves = [];
     }
   }
 
