@@ -19,7 +19,7 @@ The simulator is engineered for reliability and precision, featuring a comprehen
 - **Advanced Endgame States:**
   - **Check & Checkmate:** Precise detection of threats and immediate endgame resolution.
   - **Stalemate & Draws:** Automatic detection of draws by stalemate, 50-move rule, and insufficient material.
-- **Game History & Debugger:** Tracking of moves and state progression throughout the match, coupled with a developer-friendly UI to simulate random games and navigate past board states.
+- **Game History & Analysis:** Tracking of moves and state progression throughout the match, coupled with an advanced interface to simulate random games and navigate past board states.
 
 ## Screenshots
 
