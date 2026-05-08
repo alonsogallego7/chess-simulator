@@ -12,6 +12,12 @@ export class StockfishService {
   private worker: Worker | null = null;
   private ready = false;
 
+  constructor() {
+    // Start downloading and initialising the engine in the background
+    // as soon as the app loads, so it's ready when the user enables it.
+    this.init();
+  }
+
   /**
    * Initialise the Stockfish WASM Web Worker.
    * Call once; subsequent calls are no-ops.
