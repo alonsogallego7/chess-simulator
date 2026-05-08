@@ -12,14 +12,16 @@ The simulator is engineered for reliability and precision, featuring a comprehen
 - **Exhaustive Testing:** Validated by a suite of **50 automated match tests** covering complex scenarios, including various checkmate patterns, castling edge cases, and endgame rules.
 
 ## Key Features
-- **Stockfish AI Integration:** Compete against the world-class Stockfish engine via a REST API backend. Includes a dedicated control panel to toggle the AI on/off, adjust the difficulty depth (ELO), and seamlessly undo moves to analyze positions.
+- **Stockfish 18 WASM Integration:** Play against a world-class engine running entirely in your browser. By utilizing **WebAssembly**, the simulator offers zero-latency AI moves without external API dependencies or rate limits.
+- **Difficulty Control:** Adjust the challenge using a granular **Skill Level (0-20)** system, ranging from beginner-friendly to grandmaster-level performance.
 - **Complete FIDE Ruleset:** 
   - **Standard Play:** Full validation for all piece movements and captures.
-  - **Special Moves:** Implementation of Castling, En Passant, and Pawn Promotion (auto-queen).
+  - **Special Moves:** Implementation of Castling, En Passant, and Pawn Promotion.
 - **Advanced Endgame States:**
   - **Check & Checkmate:** Precise detection of threats and immediate endgame resolution.
   - **Stalemate & Draws:** Automatic detection of draws by stalemate, 50-move rule, and insufficient material.
-- **Game History & Analysis:** Tracking of moves and state progression throughout the match, coupled with an advanced interface to simulate random games and navigate past board states.
+- **Game History & Analysis:** Real-time evaluation parsing, move history tracking, and a dedicated simulator to replay or test specific move sequences.
+- **Privacy & Performance:** No moves are sent to external servers; all AI calculations happen locally using high-performance Web Workers.
 
 ## Screenshots
 

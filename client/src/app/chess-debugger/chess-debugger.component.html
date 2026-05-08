@@ -15,15 +15,13 @@
           <input type="checkbox" [ngModel]="gameService.stockfishEnabled" (ngModelChange)="toggleStockfish($event)">
           <span>Enabled</span>
         </label>
-        <label>Depth:
-          <select [ngModel]="gameService.stockfishDepth" (ngModelChange)="gameService.stockfishDepth = +$event">
-            <option [value]="6">6 (~1500 ELO)</option>
-            <option [value]="8">8 (~1800 ELO)</option>
-            <option [value]="10">10 (~2100 ELO)</option>
-            <option [value]="12">12 (~2350 ELO)</option>
-            <option [value]="14">14 (~2500 ELO)</option>
-            <option [value]="16">16 (~2650 ELO)</option>
-            <option [value]="18">18 (~2750 ELO)</option>
+        <label>Skill Level:
+          <select [ngModel]="gameService.stockfishSkillLevel" (ngModelChange)="onSkillLevelChange(+$event)">
+            <option [value]="0">0 (Beginner)</option>
+            <option [value]="5">5 (Easy)</option>
+            <option [value]="10">10 (Medium)</option>
+            <option [value]="15">15 (Hard)</option>
+            <option [value]="20">20 (Maximum)</option>
           </select>
         </label>
       </div>

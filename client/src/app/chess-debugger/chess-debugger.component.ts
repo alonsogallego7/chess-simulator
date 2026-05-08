@@ -7,6 +7,7 @@ import { Square } from '../models/Square';
 import { PieceFactory } from '../models/PieceFactory';
 import { Move } from '../models/Move';
 import { HistoryService } from '../services/history.service';
+import { StockfishService } from '../services/stockfish.service';
 import { algebraicToIndex } from '../helpers/chess.utils';
 
 interface PieceSnapshot { name: string; colour: 'white' | 'black'; hasMoved: boolean; }
@@ -34,6 +35,7 @@ export class ChessDebuggerComponent {
   gameService = inject(GameService);
   boardService = inject(BoardService);
   historyService = inject(HistoryService);
+  stockfishService = inject(StockfishService);
 
   historySent = signal<boolean>(false);
 
@@ -97,21 +99,34 @@ export class ChessDebuggerComponent {
   resetGame() {
     const wasEnabled = this.gameService.stockfishEnabled;
     const colour = this.gameService.stockfishColour;
-    const depth = this.gameService.stockfishDepth;
+    const skillLevel = this.gameService.stockfishSkillLevel;
     
     this.boardService.setBoard();
     this.gameService.stockfishEnabled = wasEnabled;
     this.gameService.stockfishColour = colour;
-    this.gameService.stockfishDepth = depth;
+    this.gameService.stockfishSkillLevel = skillLevel;
+    if (wasEnabled) {
+      this.stockfishService.newGame();
+    }
     this.gameService.startGame();
     this.historySent.set(false);
   }
 
   toggleStockfish(enabled: boolean) {
     this.gameService.stockfishEnabled = enabled;
-    if (enabled && this.gameService.currentTurnPlayer.colour === this.gameService.stockfishColour && !this.gameService.isGameOver) {
-      this.gameService.triggerStockfishMove();
+    if (enabled) {
+      this.stockfishService.init();
+      this.stockfishService.setSkillLevel(this.gameService.stockfishSkillLevel);
+      this.stockfishService.newGame();
+      if (this.gameService.currentTurnPlayer.colour === this.gameService.stockfishColour && !this.gameService.isGameOver) {
+        this.gameService.triggerStockfishMove();
+      }
     }
+  }
+
+  onSkillLevelChange(level: number) {
+    this.gameService.stockfishSkillLevel = level;
+    this.stockfishService.setSkillLevel(level);
   }
 
   async simulateMoves() {
@@ -295,12 +310,15 @@ export class ChessDebuggerComponent {
     
     const wasEnabled = this.gameService.stockfishEnabled;
     const colour = this.gameService.stockfishColour;
-    const depth = this.gameService.stockfishDepth;
+    const skillLevel = this.gameService.stockfishSkillLevel;
     
     this.boardService.setBoard();
     this.gameService.stockfishEnabled = wasEnabled;
     this.gameService.stockfishColour = colour;
-    this.gameService.stockfishDepth = depth;
+    this.gameService.stockfishSkillLevel = skillLevel;
+    if (wasEnabled) {
+      this.stockfishService.newGame();
+    }
     this.gameService.startGame();
     this.historySent.set(false);
   }

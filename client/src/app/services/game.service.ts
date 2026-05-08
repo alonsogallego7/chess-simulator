@@ -37,6 +37,7 @@ export class GameService {
   // Stockfish AI
   stockfishEnabled: boolean = false;
   stockfishColour: 'white' | 'black' = 'black';
+  stockfishSkillLevel: number = 10;
   stockfishDepth: number = 12;
   stockfishThinking: boolean = false;
   stockfishLastEval: number | null = null;
@@ -387,18 +388,18 @@ export class GameService {
         fullMoveNumber
       );
 
-      const response = await this.stockfishService.getBestMove(fen, this.stockfishDepth);
+      const result = await this.stockfishService.getBestMove(fen, this.stockfishDepth);
 
-      if (!response || !response.move) {
-        console.error('Stockfish API returned no move', response);
+      if (!result || !result.bestMove) {
+        console.error('Stockfish returned no move', result);
         this.stockfishThinking = false;
         return;
       }
 
-      this.stockfishLastEval = response.eval;
+      this.stockfishLastEval = result.eval;
 
       // Parse move string: "e2e4" or "b7b8q" (promotion)
-      const moveStr = response.move;
+      const moveStr = result.bestMove;
       const fromAlg = moveStr.substring(0, 2);
       const toAlg = moveStr.substring(2, 4);
       const promotionChar = moveStr.length > 4 ? moveStr[4] : null;
@@ -434,7 +435,7 @@ export class GameService {
 
       this.stockfishEnabled = savedEnabled;
     } catch (error) {
-      console.error('Stockfish API error:', error);
+      console.error('Stockfish error:', error);
       this.stockfishThinking = false;
     }
   }
