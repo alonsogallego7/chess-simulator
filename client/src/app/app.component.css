@@ -14,7 +14,7 @@ app-chess-board {
   min-height: 0;
 }
 
-app-chess-debugger {
+app-chess-engine-panel {
   flex-shrink: 0;
   width: 450px;
   height: 100%;
@@ -36,7 +36,7 @@ app-chess-debugger {
     height: auto;
   }
 
-  app-chess-debugger {
+  app-chess-engine-panel {
     width: 100%;
     flex: 0 0 auto;
     height: auto;

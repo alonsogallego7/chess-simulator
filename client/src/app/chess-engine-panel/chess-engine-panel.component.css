@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap');
 
-.debugger-container {
+.engine-panel-container {
   background: black;
   color: #eeeeee;
   padding: 1.5rem;
@@ -240,7 +240,7 @@ button:disabled {
     display: none;
   }
   
-  .debugger-container {
+  .engine-panel-container {
     padding: 0.5rem;
     border-left: none;
     border-top: 2px solid #333333;

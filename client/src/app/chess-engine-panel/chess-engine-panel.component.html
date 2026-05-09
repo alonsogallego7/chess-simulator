@@ -1,4 +1,4 @@
-<div class="debugger-container">
+<div class="engine-panel-container">
   <header>
     <h2>Engine Panel</h2>
     <div class="actions" style="display: flex; gap: 0.5rem;">
@@ -6,6 +6,15 @@
       <button (click)="resetGame()" class="btn-reset">RESET</button>
     </div>
   </header>
+
+  <section class="multiplayer-section" style="display: none;">
+    <h3>Online Multiplayer</h3>
+    <div class="multiplayer-controls">
+      <div class="multiplayer-row">
+
+      </div>
+    </div>
+  </section>
 
   <section class="stockfish-section">
     <h3>Stockfish AI</h3>
@@ -37,8 +46,7 @@
       <div class="state-item"><strong>Is Game Over:</strong> {{ gameService.isGameOver }}</div>
       <div class="state-item"><strong>Reason:</strong> {{ gameService.gameOverReason || 'None' }}</div>
     </div>
-  </section>
-  -->
+  </section> -->
 
   <section class="simulation-input">
     <h3>Simulator</h3>
@@ -99,7 +107,7 @@
 
 
 
-  <section class="history">
+  <section class="history" style="display: none;">
     <h3>Move History ({{ gameService.movesHistory.length }})</h3>
     <ul class="history-list">
       <li *ngFor="let move of gameService.movesHistory; let i = index">

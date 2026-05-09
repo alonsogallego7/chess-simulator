@@ -357,7 +357,7 @@ export class BoardService {
           square.highlight != "last-move-from" &&
           square.highlight != "last-move-to" &&
           square.highlight != "check" &&
-          square.highlight != "debug"
+          square.highlight != "engine-panel"
         ) {
           square.highlight = "none";
         }
@@ -365,19 +365,19 @@ export class BoardService {
     }
   }
 
-  clearDebugHighlights() {
+  clearEnginePanelHighlights() {
     for (let row of this.board()) {
       for (let square of row) {
-        if (square.highlight === "debug") {
+        if (square.highlight === "engine-panel") {
           square.highlight = "none";
         }
       }
     }
   }
 
-  setDebugHighlight(r: number, c: number) {
+  setEnginePanelHighlight(r: number, c: number) {
     if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-      this.board()[r][c].highlight = "debug";
+      this.board()[r][c].highlight = "engine-panel";
     }
   }
 

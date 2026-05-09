@@ -25,13 +25,13 @@ interface GameSnapshot {
 }
 
 @Component({
-  selector: 'app-chess-debugger',
+  selector: 'app-chess-engine-panel',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './chess-debugger.component.html',
-  styleUrl: './chess-debugger.component.css'
+  templateUrl: './chess-engine-panel.component.html',
+  styleUrl: './chess-engine-panel.component.css'
 })
-export class ChessDebuggerComponent {
+export class ChessEnginePanelComponent {
   gameService = inject(GameService);
   boardService = inject(BoardService);
   historyService = inject(HistoryService);
@@ -61,8 +61,8 @@ export class ChessDebuggerComponent {
     this.gameService.onBeforeMove = () => this.saveSnapshot();
 
     effect(() => {
-      // Clear previous debug highlights
-      this.boardService.clearDebugHighlights();
+      // Clear previous engine-panel highlights
+      this.boardService.clearEnginePanelHighlights();
       
       // Highlight new ones
       const fr = this.fromRow();
@@ -70,8 +70,8 @@ export class ChessDebuggerComponent {
       const tr = this.toRow();
       const tc = this.toCol();
 
-      if (fr !== null && fc !== null) this.boardService.setDebugHighlight(fr, fc);
-      if (tr !== null && tc !== null) this.boardService.setDebugHighlight(tr, tc);
+      if (fr !== null && fc !== null) this.boardService.setEnginePanelHighlight(fr, fc);
+      if (tr !== null && tc !== null) this.boardService.setEnginePanelHighlight(tr, tc);
     });
   }
 

@@ -4,7 +4,7 @@ export class Square {
   // CSS
   squareClass: string;
   squareColorClass: string;
-  highlight: "none" | "selected" | "last-move-from" | "last-move-to" | "move" | "intersect" | "check" | "debug";
+  highlight: "none" | "selected" | "last-move-from" | "last-move-to" | "move" | "intersect" | "check" | "engine-panel";
 
   // Game
   coordinates: [number, number];
