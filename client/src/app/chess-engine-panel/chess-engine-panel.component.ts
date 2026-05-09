@@ -54,7 +54,7 @@ export class ChessEnginePanelComponent {
   randomSimDelayMs = signal<number>(400);
   isRandomSimulating = signal<boolean>(false);
   snapshots = signal<GameSnapshot[]>([]);
-  canUndo = computed(() => this.snapshots().length > 0 && !this.isRandomSimulating() && !this.gameService.stockfishThinking);
+  canUndo = computed(() => this.snapshots().length > 0 && !this.isRandomSimulating() && !this.gameService.stockfishThinking());
 
   constructor() {
     // Register snapshot saving for undo support on every move
@@ -118,7 +118,7 @@ export class ChessEnginePanelComponent {
       this.stockfishService.init();
       this.stockfishService.setSkillLevel(this.gameService.stockfishSkillLevel);
       this.stockfishService.newGame();
-      if (this.gameService.currentTurnPlayer.colour === this.gameService.stockfishColour && !this.gameService.isGameOver) {
+      if (this.gameService.currentTurnPlayer().colour === this.gameService.stockfishColour && !this.gameService.isGameOver()) {
         this.gameService.triggerStockfishMove();
       }
     }
@@ -127,6 +127,17 @@ export class ChessEnginePanelComponent {
   onSkillLevelChange(level: number) {
     this.gameService.stockfishSkillLevel = level;
     this.stockfishService.setSkillLevel(level);
+  }
+
+  get humanColour(): 'white' | 'black' {
+    return this.gameService.stockfishColour === 'black' ? 'white' : 'black';
+  }
+
+  onPlayAsChange(colour: string) {
+    const newStockfishColour = colour === 'white' ? 'black' : 'white';
+    this.gameService.stockfishColour = newStockfishColour as 'white' | 'black';
+    this.boardService.boardFlipped.set(colour === 'black');
+    this.resetGame();
   }
 
   async simulateMoves() {
@@ -179,16 +190,16 @@ export class ChessEnginePanelComponent {
             : null
         }))
       ),
-      currentTurnColour: this.gameService.currentTurnPlayer.colour as 'white' | 'black',
-      isCheck: this.gameService.isCheck,
+      currentTurnColour: this.gameService.currentTurnPlayer().colour as 'white' | 'black',
+      isCheck: this.gameService.isCheck(),
       checkAttackLine: this.gameService.checkAttackLine.map(c => [...c] as [number, number]),
-      isGameOver: this.gameService.isGameOver,
-      gameOverReason: this.gameService.gameOverReason,
-      halfMoveClock: this.gameService.halfMoveClock,
+      isGameOver: this.gameService.isGameOver(),
+      gameOverReason: this.gameService.gameOverReason(),
+      halfMoveClock: this.gameService.halfMoveClock(),
       lastMove: this.boardService.lastMove
         ? { ...this.boardService.lastMove, from: [...this.boardService.lastMove.from] as [number, number], to: [...this.boardService.lastMove.to] as [number, number] }
         : null,
-      movesHistory: this.gameService.movesHistory.map(m => ({ ...m, from: [...m.from] as [number, number], to: [...m.to] as [number, number] })),
+      movesHistory: this.gameService.movesHistory().map(m => ({ ...m, from: [...m.from] as [number, number], to: [...m.to] as [number, number] })),
     };
     this.snapshots.update(prev => [...prev, snap]);
   }
@@ -222,18 +233,18 @@ export class ChessEnginePanelComponent {
     this.boardService.board.set(newBoard);
 
     // Restore game state
-    this.gameService.isCheck = snap.isCheck;
+    this.gameService.isCheck.set(snap.isCheck);
     this.gameService.checkAttackLine = snap.checkAttackLine;
-    this.gameService.isGameOver = snap.isGameOver;
-    this.gameService.gameOverReason = snap.gameOverReason;
-    this.gameService.halfMoveClock = snap.halfMoveClock;
+    this.gameService.isGameOver.set(snap.isGameOver);
+    this.gameService.gameOverReason.set(snap.gameOverReason);
+    this.gameService.halfMoveClock.set(snap.halfMoveClock);
     this.gameService.selectedSquare = null;
     this.gameService.selectedPieceValidMoves = [];
     this.boardService.lastMove = snap.lastMove ? { ...snap.lastMove } : null;
-    this.gameService.movesHistory = snap.movesHistory.map(m => ({ ...m }));
+    this.gameService.movesHistory.set(snap.movesHistory.map(m => ({ ...m })));
 
-    const [p1, p2] = this.gameService['playerService'].getPlayers();
-    this.gameService.currentTurnPlayer = snap.currentTurnColour === p1.colour ? p1 : p2;
+    const [p1, p2] = (this.gameService as any)['playerService'].getPlayers();
+    this.gameService.currentTurnPlayer.set(snap.currentTurnColour === p1.colour ? p1 : p2);
 
     this.boardService.resetSquaresHighlight();
 
@@ -246,8 +257,8 @@ export class ChessEnginePanelComponent {
   /** Returns a random legal move for the current player as [fromSquare, toSquare], or null if none. */
   private getRandomMove(): [import('../models/Square').Square, import('../models/Square').Square] | null {
     const board = this.boardService.board();
-    const colour = this.gameService.currentTurnPlayer.colour;
-    const isCheck = this.gameService.isCheck;
+    const colour = this.gameService.currentTurnPlayer().colour;
+    const isCheck = this.gameService.isCheck();
     const checkLine = this.gameService.checkAttackLine;
 
     // Collect all legal moves
@@ -273,7 +284,7 @@ export class ChessEnginePanelComponent {
 
   /** Execute exactly one random legal move. */
   nextRandomMove() {
-    if (this.gameService.isGameOver) return;
+    if (this.gameService.isGameOver()) return;
     const move = this.getRandomMove();
     if (!move) return;
     this.saveSnapshot();
@@ -287,7 +298,7 @@ export class ChessEnginePanelComponent {
     if (this.isRandomSimulating()) return;
     this.isRandomSimulating.set(true);
 
-    while (this.isRandomSimulating() && !this.gameService.isGameOver) {
+    while (this.isRandomSimulating() && !this.gameService.isGameOver()) {
       const move = this.getRandomMove();
       if (!move) break;
       this.saveSnapshot();
@@ -324,19 +335,19 @@ export class ChessEnginePanelComponent {
   }
 
   sendHistory() {
-    if (!this.gameService.isGameOver) return;
+    if (!this.gameService.isGameOver()) return;
     
     let winner: string | null = null;
-    if (this.gameService.gameOverReason.includes('White wins')) {
+    if (this.gameService.gameOverReason().includes('White wins')) {
       winner = 'white';
-    } else if (this.gameService.gameOverReason.includes('Black wins')) {
+    } else if (this.gameService.gameOverReason().includes('Black wins')) {
       winner = 'black';
     }
     
-    const isDraw = this.gameService.gameOverReason.includes('Draw');
+    const isDraw = this.gameService.gameOverReason().includes('Draw');
 
     const payload = {
-      moves: this.gameService.movesHistory,
+      moves: this.gameService.movesHistory(),
       winnerColor: winner,
       isDraw: isDraw
     };

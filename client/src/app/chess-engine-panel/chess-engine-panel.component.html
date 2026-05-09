@@ -7,6 +7,18 @@
     </div>
   </header>
 
+  <section>
+    <h3>Board Settings</h3>
+    <div class="stockfish-controls">
+      <label>Play as:
+        <select [ngModel]="humanColour" (ngModelChange)="onPlayAsChange($event)">
+          <option value="white">White</option>
+          <option value="black">Black</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
   <section class="multiplayer-section" style="display: none;">
     <h3>Online Multiplayer</h3>
     <div class="multiplayer-controls">
@@ -41,10 +53,10 @@
   <section class="state-summary">
     <h3>Game State</h3>
     <div class="state-grid">
-      <div class="state-item"><strong>Turn:</strong> {{ gameService.currentTurnPlayer.colour }}</div>
-      <div class="state-item"><strong>Is Check:</strong> {{ gameService.isCheck }}</div>
-      <div class="state-item"><strong>Is Game Over:</strong> {{ gameService.isGameOver }}</div>
-      <div class="state-item"><strong>Reason:</strong> {{ gameService.gameOverReason || 'None' }}</div>
+      <div class="state-item"><strong>Turn:</strong> {{ gameService.currentTurnPlayer().colour }}</div>
+      <div class="state-item"><strong>Is Check:</strong> {{ gameService.isCheck() }}</div>
+      <div class="state-item"><strong>Is Game Over:</strong> {{ gameService.isGameOver() }}</div>
+      <div class="state-item"><strong>Reason:</strong> {{ gameService.gameOverReason() || 'None' }}</div>
     </div>
   </section> -->
 
@@ -72,16 +84,16 @@
         <label>Delay (ms):
           <input type="number" [ngModel]="randomSimDelayMs()" (ngModelChange)="randomSimDelayMs.set($event)" min="0" step="100" style="width: 80px;">
         </label>
-        <button (click)="nextRandomMove()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Next move</button>
-        <button (click)="simulateRandomGame()" [disabled]="isRandomSimulating() || gameService.isGameOver" class="btn-execute">Simulate game</button>
+        <button (click)="nextRandomMove()" [disabled]="isRandomSimulating() || gameService.isGameOver()" class="btn-execute">Next move</button>
+        <button (click)="simulateRandomGame()" [disabled]="isRandomSimulating() || gameService.isGameOver()" class="btn-execute">Simulate game</button>
         <button (click)="stopRandomSimulation()" [disabled]="!isRandomSimulating()">Stop</button>
         <button (click)="resetRandomSimulation()" class="btn-reset">Reset</button>
       </div>
       @if (isRandomSimulating()) {
         <p class="sim-status">Simulating random moves...</p>
       }
-      @if (gameService.isGameOver) {
-        <p class="sim-status game-over">{{ gameService.gameOverReason }}</p>
+      @if (gameService.isGameOver()) {
+        <p class="sim-status game-over">{{ gameService.gameOverReason() }}</p>
       }
     </div>
   </section>
@@ -108,14 +120,14 @@
 
 
   <section class="history" style="display: none;">
-    <h3>Move History ({{ gameService.movesHistory.length }})</h3>
+    <h3>Move History ({{ gameService.movesHistory().length }})</h3>
     <ul class="history-list">
-      <li *ngFor="let move of gameService.movesHistory; let i = index">
+      <li *ngFor="let move of gameService.movesHistory(); let i = index">
         {{ i + 1 }}. [{{ move.from }}] → [{{ move.to }}]
       </li>
     </ul>
 
-    @if (gameService.isGameOver) {
+    @if (gameService.isGameOver()) {
       <div style="margin-top: 1rem;">
         <button (click)="sendHistory()" class="btn-execute">Send Game History</button>
         @if (historySent()) {

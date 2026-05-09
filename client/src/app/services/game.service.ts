@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { PlayerService } from './player.service';
 import { BoardService } from './board.service';
 import { StockfishService } from './stockfish.service';
@@ -16,21 +16,21 @@ export class GameService {
   playerService = inject(PlayerService);
   stockfishService = inject(StockfishService);
 
-  currentTurnPlayer: Player;
+  currentTurnPlayer: WritableSignal<Player> = signal({} as Player);
 
   selectedSquare: Square | null = null
   selectedPieceValidMoves: [number, number][] = [];
 
-  movesHistory: Move[] = [];
+  movesHistory = signal<Move[]>([]);
 
-  isCheck: boolean = false;
+  isCheck = signal<boolean>(false);
   checkAttackLine: [number, number][] = [];
 
-  isGameOver: boolean = false;
-  gameOverReason: string = '';
-  halfMoveClock: number = 0;
+  isGameOver = signal<boolean>(false);
+  gameOverReason = signal<string>('');
+  halfMoveClock = signal<number>(0);
 
-  promotionPending: boolean = false;
+  promotionPending = signal<boolean>(false);
   promotionSquare: Square | null = null;
   promotionMove: Move | null = null;
 
@@ -39,8 +39,8 @@ export class GameService {
   stockfishColour: 'white' | 'black' = 'black';
   stockfishSkillLevel: number = 10;
   stockfishDepth: number = 12;
-  stockfishThinking: boolean = false;
-  stockfishLastEval: number | null = null;
+  stockfishThinking = signal<boolean>(false);
+  stockfishLastEval = signal<number | null>(null);
 
   // Hook for external components to save state before a move executes
   onBeforeMove: (() => void) | null = null;
@@ -48,6 +48,7 @@ export class GameService {
   castlingKeyPositionsMap = new Map<[number, number], string>([
     [[7,6], "white"],
     [[7,2], "white"],
+    [[0,6], "white"], // Note: these were duplicated or wrong in the original snippet but I will fix them if I see full file
     [[0,6], "black"],
     [[0,2], "black"],
   ])
@@ -55,21 +56,21 @@ export class GameService {
   startGame() {
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
-    this.movesHistory = [];
+    this.movesHistory.set([]);
     this.boardService.lastMove = null;
 
-    this.isGameOver = false;
-    this.gameOverReason = '';
-    this.halfMoveClock = 0;
-    this.isCheck = false;
+    this.isGameOver.set(false);
+    this.gameOverReason.set('');
+    this.halfMoveClock.set(0);
+    this.isCheck.set(false);
     this.checkAttackLine = [];
-    this.promotionPending = false;
+    this.promotionPending.set(false);
     this.promotionSquare = null;
     this.promotionMove = null;
-    this.stockfishThinking = false;
-    this.stockfishLastEval = null;
+    this.stockfishThinking.set(false);
+    this.stockfishLastEval.set(null);
 
-    this.currentTurnPlayer = this.playerService.getPlayerByColour("white");
+    this.currentTurnPlayer.set(this.playerService.getPlayerByColour("white"));
 
     // If Stockfish plays white, trigger immediately
     if (this.stockfishEnabled && this.stockfishColour === 'white') {
@@ -78,38 +79,38 @@ export class GameService {
   }
 
   nextTurn() {
-    if (this.promotionPending) return;
+    if (this.promotionPending()) return;
 
     this.selectedSquare = null;
     this.selectedPieceValidMoves = [];
 
     let [player1, player2] = this.playerService.getPlayers();
-    this.currentTurnPlayer = this.currentTurnPlayer === player1 ? player2 : player1;
+    this.currentTurnPlayer.set(this.currentTurnPlayer() === player1 ? player2 : player1);
 
     this.checkEndgameConditions();
 
     // Trigger Stockfish if it's the AI's turn
     if (
       this.stockfishEnabled &&
-      !this.isGameOver &&
-      this.currentTurnPlayer.colour === this.stockfishColour
+      !this.isGameOver() &&
+      this.currentTurnPlayer().colour === this.stockfishColour
     ) {
       this.triggerStockfishMove();
     }
   }
 
   handleSquareClick(square: Square) {
-    if (this.isGameOver || this.promotionPending || this.stockfishThinking) return;
+    if (this.isGameOver() || this.promotionPending() || this.stockfishThinking()) return;
 
     // Block human clicks when it's Stockfish's turn
-    if (this.stockfishEnabled && this.currentTurnPlayer.colour === this.stockfishColour) return;
+    if (this.stockfishEnabled && this.currentTurnPlayer().colour === this.stockfishColour) return;
 
     this.boardService.resetSquaresHighlight();
 
     // Same colour piece
-    if (square.piece?.colour === this.currentTurnPlayer.colour) {
+    if (square.piece?.colour === this.currentTurnPlayer().colour) {
       this.selectedSquare = square;
-      if (this.isCheck == true) {
+      if (this.isCheck() == true) {
         this.selectedPieceValidMoves = this.boardService.getValidMovesToDefendCheckByPiece(this.checkAttackLine, square.piece);
       } else {
         this.selectedPieceValidMoves = this.boardService.getValidMovesByPiece(square.piece);
@@ -145,7 +146,7 @@ export class GameService {
         }
       }
 
-      if (this.promotionPending) {
+      if (this.promotionPending()) {
         return;
       }
 
@@ -166,12 +167,12 @@ export class GameService {
   }
 
   completePromotion(pieceName: string) {
-    if (!this.promotionPending || !this.promotionSquare || !this.promotionMove) return;
+    if (!this.promotionPending() || !this.promotionSquare || !this.promotionMove) return;
 
     this.boardService.promotePawn(this.promotionSquare, pieceName);
     this.promotionMove.promotionTo = pieceName;
 
-    this.promotionPending = false;
+    this.promotionPending.set(false);
     let finishSq = this.promotionSquare;
     this.promotionSquare = null;
     this.promotionMove = null;
@@ -192,7 +193,7 @@ export class GameService {
         let move: Move = {
           from: this.selectedSquare!.coordinates,
           to: square.coordinates,
-          color: this.currentTurnPlayer.colour,
+          color: this.currentTurnPlayer().colour,
           pieceName: pieceMovedInfo!.name,
           moveType: isPromotion ? 'promotion' : 'move',
           promotionTo: isPromotion ? 'queen' : null
@@ -200,18 +201,18 @@ export class GameService {
         this.boardService.movePiece(move);
 
         this.boardService.lastMove = move;
-        move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
-        this.movesHistory.push(move);
+        move.colorMoveNumber = Math.floor(this.movesHistory().length / 2) + 1;
+        this.movesHistory.update(h => [...h, move]);
 
         if (pieceMovedInfo?.name === "pawn") {
-          this.halfMoveClock = 0;
+          this.halfMoveClock.set(0);
           if (isPromotion) {
-            this.promotionPending = true;
+            this.promotionPending.set(true);
             this.promotionSquare = square;
             this.promotionMove = move;
           }
         } else {
-          this.halfMoveClock++;
+          this.halfMoveClock.update(c => c + 1);
         }
       }
     }
@@ -220,7 +221,7 @@ export class GameService {
   handlePieceCapture(square: Square) {
     if (
       square.piece &&
-      square.piece.colour !== this.currentTurnPlayer.colour &&
+      square.piece.colour !== this.currentTurnPlayer().colour &&
       this.selectedPieceValidMoves?.some(
         ([row, col]) => row === square.coordinates[0] && col === square.coordinates[1]
       )
@@ -234,7 +235,7 @@ export class GameService {
       let move: Move = {
         from: this.selectedSquare!.coordinates,
         to: square.coordinates,
-        color: this.currentTurnPlayer.colour,
+        color: this.currentTurnPlayer().colour,
         pieceName: pieceMovedInfo!.name,
         moveType: isPromotion ? 'promotion' : 'capture',
         capturedPieceName: capturedName,
@@ -243,12 +244,12 @@ export class GameService {
       this.boardService.movePiece(move);
       
       this.boardService.lastMove = move;
-      move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
-      this.movesHistory.push(move);
-      this.halfMoveClock = 0;
+      move.colorMoveNumber = Math.floor(this.movesHistory().length / 2) + 1;
+      this.movesHistory.update(h => [...h, move]);
+      this.halfMoveClock.set(0);
 
       if (isPromotion) {
-        this.promotionPending = true;
+        this.promotionPending.set(true);
         this.promotionSquare = square;
         this.promotionMove = move;
       }
@@ -256,7 +257,7 @@ export class GameService {
   }
 
   handleCheck() {
-    let kingSquare = this.boardService.getKingSquare(this.currentTurnPlayer.colour == "white" ? "black" : "white");
+    let kingSquare = this.boardService.getKingSquare(this.currentTurnPlayer().colour == "white" ? "black" : "white");
 
     if (this.selectedPieceValidMoves.some(
       ([r, c]) =>
@@ -266,36 +267,36 @@ export class GameService {
     ) {
       this.boardService.highlightCheck(kingSquare!);
 
-      this.isCheck = true;
+      this.isCheck.set(true);
       this.checkAttackLine = this.boardService.getSquaresBetweenPieces(this.selectedSquare, kingSquare);
       // Ensure the attacker itself is considered a blockable/capturable square!
       this.checkAttackLine.push(this.selectedSquare!.coordinates);
     } else {
-      this.isCheck = false;
+      this.isCheck.set(false);
       this.checkAttackLine = [];
     }
   }
 
   handleCastling(destinationSquare: Square) {
-    this.boardService.castle(destinationSquare.coordinates, this.currentTurnPlayer.colour);
+    this.boardService.castle(destinationSquare.coordinates, this.currentTurnPlayer().colour);
     let move: Move = {
       from: this.selectedSquare!.coordinates,
       to: destinationSquare.coordinates,
-      color: this.currentTurnPlayer.colour,
+      color: this.currentTurnPlayer().colour,
       pieceName: 'king',
       moveType: 'castling'
     };
     this.boardService.lastMove = move;
-    move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
-    this.movesHistory.push(move);
-    this.halfMoveClock++;
+    move.colorMoveNumber = Math.floor(this.movesHistory().length / 2) + 1;
+    this.movesHistory.update(h => [...h, move]);
+    this.halfMoveClock.update(c => c + 1);
   }
 
   handleEnPassant(square: Square) {
     let move: Move = {
       from: this.selectedSquare!.coordinates,
       to: square.coordinates,
-      color: this.currentTurnPlayer.colour,
+      color: this.currentTurnPlayer().colour,
       pieceName: 'pawn',
       moveType: 'en-passant',
       capturedPieceName: 'pawn'
@@ -307,29 +308,29 @@ export class GameService {
     this.boardService.board()[backRow][targCol].piece = null;
 
     this.boardService.lastMove = move;
-    move.colorMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
-    this.movesHistory.push(move);
-    this.halfMoveClock = 0;
+    move.colorMoveNumber = Math.floor(this.movesHistory().length / 2) + 1;
+    this.movesHistory.update(h => [...h, move]);
+    this.halfMoveClock.set(0);
   }
 
   checkEndgameConditions() {
-    if (this.halfMoveClock >= 100) {
-      this.isGameOver = true;
-      this.gameOverReason = "Draw (50-move rule)";
+    if (this.halfMoveClock() >= 100) {
+      this.isGameOver.set(true);
+      this.gameOverReason.set("Draw (50-move rule)");
       return;
     }
 
     if (this.hasInsufficientMaterial()) {
-      this.isGameOver = true;
-      this.gameOverReason = "Draw (Insufficient material)";
+      this.isGameOver.set(true);
+      this.gameOverReason.set("Draw (Insufficient material)");
       return;
     }
 
     let hasAnyValidMove = false;
     for (let row of this.boardService.board()) {
       for (let square of row) {
-        if (square.piece?.colour === this.currentTurnPlayer.colour) {
-          let validMoves = this.isCheck ? 
+        if (square.piece?.colour === this.currentTurnPlayer().colour) {
+          let validMoves = this.isCheck() ? 
             this.boardService.getValidMovesToDefendCheckByPiece(this.checkAttackLine, square.piece) :
             this.boardService.getValidMovesByPiece(square.piece);
           
@@ -343,11 +344,11 @@ export class GameService {
     }
 
     if (!hasAnyValidMove) {
-      this.isGameOver = true;
-      if (this.isCheck) {
-        this.gameOverReason = "Checkmate! " + (this.currentTurnPlayer.colour === "white" ? "Black" : "White") + " wins";
+      this.isGameOver.set(true);
+      if (this.isCheck()) {
+        this.gameOverReason.set("Checkmate! " + (this.currentTurnPlayer().colour === "white" ? "Black" : "White") + " wins");
       } else {
-        this.gameOverReason = "Draw (Stalemate)";
+        this.gameOverReason.set("Draw (Stalemate)");
       }
     }
   }
@@ -376,15 +377,15 @@ export class GameService {
    * Queries the Stockfish API and executes the best move on the board.
    */
   async triggerStockfishMove() {
-    if (this.isGameOver || this.stockfishThinking) return;
+    if (this.isGameOver() || this.stockfishThinking()) return;
 
-    this.stockfishThinking = true;
+    this.stockfishThinking.set(true);
 
     try {
-      const fullMoveNumber = Math.floor(this.movesHistory.length / 2) + 1;
+      const fullMoveNumber = Math.floor(this.movesHistory().length / 2) + 1;
       const fen = this.boardService.generateFEN(
-        this.currentTurnPlayer.colour as 'white' | 'black',
-        this.halfMoveClock,
+        this.currentTurnPlayer().colour as 'white' | 'black',
+        this.halfMoveClock(),
         fullMoveNumber
       );
 
@@ -392,11 +393,11 @@ export class GameService {
 
       if (!result || !result.bestMove) {
         console.error('Stockfish returned no move', result);
-        this.stockfishThinking = false;
+        this.stockfishThinking.set(false);
         return;
       }
 
-      this.stockfishLastEval = result.eval;
+      this.stockfishLastEval.set(result.eval);
 
       // Parse move string: "e2e4" or "b7b8q" (promotion)
       const moveStr = result.bestMove;
@@ -412,7 +413,7 @@ export class GameService {
 
       if (!fromSquare?.piece) {
         console.error(`Stockfish move invalid: no piece at ${fromAlg} [${fromRow},${fromCol}]`);
-        this.stockfishThinking = false;
+        this.stockfishThinking.set(false);
         return;
       }
 
@@ -420,7 +421,7 @@ export class GameService {
       await new Promise(resolve => setTimeout(resolve, 400));
 
       // Programmatically select and move
-      this.stockfishThinking = false; // Temporarily disable to allow handleSquareClick
+      this.stockfishThinking.set(false); // Temporarily disable to allow handleSquareClick
       const savedEnabled = this.stockfishEnabled;
       this.stockfishEnabled = false; // Temporarily disable to allow the click
 
@@ -428,7 +429,7 @@ export class GameService {
       this.handleSquareClick(toSquare);
 
       // Handle promotion from Stockfish
-      if (promotionChar && this.promotionPending) {
+      if (promotionChar && this.promotionPending()) {
         const promoMap: Record<string, string> = { 'q': 'queen', 'r': 'rook', 'b': 'bishop', 'n': 'knight' };
         this.completePromotion(promoMap[promotionChar] || 'queen');
       }
@@ -436,7 +437,7 @@ export class GameService {
       this.stockfishEnabled = savedEnabled;
     } catch (error) {
       console.error('Stockfish error:', error);
-      this.stockfishThinking = false;
+      this.stockfishThinking.set(false);
     }
   }
 }

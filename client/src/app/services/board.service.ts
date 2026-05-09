@@ -10,6 +10,7 @@ import { GameService } from './game.service';
 })
 export class BoardService {
   board: WritableSignal<Square[][]> = signal([]);
+  boardFlipped = signal(false);
   gameService: GameService;
   lastMove: Move | null = null;
 

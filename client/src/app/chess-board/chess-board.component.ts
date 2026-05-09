@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, computed } from '@angular/core';
 import { BoardService } from '../services/board.service';
 import { NgClass } from '@angular/common';
 import { PlayerService } from '../services/player.service';
@@ -24,19 +24,40 @@ export class ChessBoardComponent implements OnInit{
     this.gameService.startGame();
   }
 
-  get board() {
-    return this.boardService.board();
-  }
+  /** Returns the board with rows/cols reversed when flipped — same Square references, so clicks still work. */
+  displayBoard = computed(() => {
+    const b = this.boardService.board();
+    if (this.boardService.boardFlipped()) {
+      return [...b].reverse().map(row => [...row].reverse());
+    }
+    return b;
+  });
 
-  get capturedByWhite() {
-    return this.gameService.movesHistory
+  leftCapturedPieces = computed(() => {
+    return this.boardService.boardFlipped() ? this.capturedByWhite() : this.capturedByBlack();
+  });
+
+  leftCapturedImgPrefix = computed(() => {
+    return this.boardService.boardFlipped() ? 'black' : 'white';
+  });
+
+  rightCapturedPieces = computed(() => {
+    return this.boardService.boardFlipped() ? this.capturedByBlack() : this.capturedByWhite();
+  });
+
+  rightCapturedImgPrefix = computed(() => {
+    return this.boardService.boardFlipped() ? 'white' : 'black';
+  });
+
+  capturedByWhite = computed(() => {
+    return this.gameService.movesHistory()
       .filter(m => m.color === 'white' && m.capturedPieceName)
       .map(m => m.capturedPieceName!);
-  }
+  });
 
-  get capturedByBlack() {
-    return this.gameService.movesHistory
+  capturedByBlack = computed(() => {
+    return this.gameService.movesHistory()
       .filter(m => m.color === 'black' && m.capturedPieceName)
       .map(m => m.capturedPieceName!);
-  }
+  });
 }
