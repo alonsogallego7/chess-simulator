@@ -339,6 +339,16 @@ export class BoardService {
     kingSquare.highlight = "check";
   }
 
+  clearCheckHighlight() {
+    for (let row of this.board()) {
+      for (let square of row) {
+        if (square.highlight === "check") {
+          square.highlight = "none";
+        }
+      }
+    }
+  }
+
   highlightMoves(selectedSquare: Square, moves: [number, number][]) {
     if (!selectedSquare) return;
 

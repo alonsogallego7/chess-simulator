@@ -257,6 +257,8 @@ export class GameService {
   }
 
   handleCheck() {
+    this.boardService.clearCheckHighlight();
+    
     let kingSquare = this.boardService.getKingSquare(this.currentTurnPlayer().colour == "white" ? "black" : "white");
 
     if (this.selectedPieceValidMoves.some(
